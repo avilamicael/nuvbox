@@ -104,6 +104,29 @@ nano .env
   - Muito baixo: Detecção de ruído
   - Muito alto: Perde falas curtas
 
+## 🪟 Cliente Windows (windows_mic_sender.py)
+
+Usadas pelo script `clients/windows_mic_sender.py` que roda no Windows.
+O script lê estas variáveis automaticamente do `.env` — não é necessário editar o código.
+
+### `BACKEND_URL`
+- **Tipo**: URL
+- **Padrão**: `http://localhost:5001`
+- **Descrição**: URL do backend Jarvis para onde o microfone envia os dados
+- **Quando mudar**:
+  - `http://localhost:5001` → Backend rodando no WSL2 da mesma máquina
+  - `http://192.168.1.100:5001` → Backend em máquina local na rede
+  - `https://meudominio.com` → Backend em VPS/nuvem
+
+### `CLIENT_SOURCE_ID`
+- **Tipo**: string
+- **Padrão**: `windows_mic`
+- **Descrição**: Identificador desta máquina no banco de dados (campo `fonte` na tabela `transcricoes`)
+- **Útil para**: Distinguir quando há múltiplos clientes enviando para o mesmo backend
+- **Exemplos**: `windows_mic`, `notebook_casa`, `pc_escritorio`
+
+---
+
 ## 🌐 Flask/Alexa
 
 ### `ALEXA_WEBHOOK_SECRET`
@@ -189,13 +212,17 @@ WHISPER_LANGUAGE=pt
 VAD_SILENCE_DURATION_MS=500
 VAD_MIN_SPEECH_DURATION_MS=300
 
-# Alexa
+# Webhook / Segurança
 ALEXA_WEBHOOK_SECRET=meu_secret_alexa_123
 
 # Logging
 LOG_LEVEL=INFO
 
-# Internas
+# ── Cliente Windows ──────────────────────
+BACKEND_URL=http://localhost:5001
+CLIENT_SOURCE_ID=windows_mic
+
+# ── Docker Interno ───────────────────────
 LOG_DIR=/app/logs
 ```
 

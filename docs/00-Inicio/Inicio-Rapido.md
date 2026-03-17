@@ -69,18 +69,62 @@ Sistema está rodando. Pronto para usar.
 
 ## 🧪 Testar
 
-### Teste de Microfone
+### Teste de Webhook (qualquer SO)
 ```bash
-# Fale 3 segundos no seu microfone
-# Depois execute:
-docker-compose logs backend | grep "Transcribed"
+make webhook-test
+# Ou:
+curl -s -X POST http://localhost:5001/webhook/text \
+  -H "Content-Type: application/json" \
+  -H "X-Jarvis-Secret: mude_antes_do_ngrok" \
+  -d '{"text":"teste","source":"manual","timestamp":"2026-01-01T00:00:00Z"}'
 ```
 
-### Teste de Banco de Dados
+### Ver registros salvos
 ```bash
-docker-compose exec postgres psql -U jarvis -d jarvis_db \
-  -c "SELECT COUNT(*) FROM transcricoes;"
+make db-recent
 ```
+
+---
+
+## 🎤 Captura de Microfone
+
+> O Docker **não tem acesso** ao microfone da máquina. Para capturar áudio, use o script cliente.
+
+### No Windows (PowerShell — fora do WSL2)
+
+```powershell
+# 1. Instalar dependências (apenas 1ª vez)
+pip install sounddevice numpy requests silero-vad python-dotenv
+pip install torch --extra-index-url https://download.pytorch.org/whl/cpu
+pip install openai-whisper
+
+# 2. Ir para a pasta do projeto
+cd C:\Users\SeuUsuario\nuvbox
+
+# 3. Listar microfones disponíveis
+python clients\windows_mic_sender.py --list-devices
+
+# 4. Rodar (lê configurações do .env automaticamente)
+python clients\windows_mic_sender.py
+```
+
+O script usa as variáveis do `.env`:
+```env
+BACKEND_URL=http://localhost:5001   # onde está o backend
+CLIENT_SOURCE_ID=windows_mic        # como esta máquina aparece no banco
+```
+
+### No Linux (sem Docker)
+
+```bash
+# Terminal 1: PostgreSQL em Docker + Backend local
+docker-compose up -d postgres
+DB_HOST=localhost python backend/main.py
+
+# O microfone USB é capturado diretamente
+```
+
+> Ver [[Windows-Mic-Sender-Setup|Setup Completo Windows]] e [[Deployment-Docker-vs-Local|Docker vs Local]] para mais detalhes.
 
 ## 🛑 Parar
 

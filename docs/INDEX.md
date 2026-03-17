@@ -22,31 +22,27 @@ Guias para começar rápido, sem complexidade.
 
 ### 🏗️ [[01-Arquitetura/README|Arquitetura]]
 Documentação técnica completa e aprofundada.
-- [[Arquitetura-Geral|Arquitetura Geral]] - Visão geral do sistema
-- [[Estrutura-Projeto|Estrutura do Projeto]] - Descrição de cada arquivo
-- [[Pipeline-Dados|Pipeline de Dados]] - Fluxo de dados
-- [[Modulos|Módulos]] - Módulos 1, 2, 3
-- [[Configuracao|Configuração]] - Sistema de configuração
+- [[Arquitetura-Geral|Arquitetura Geral]] - Visão geral do sistema e threading model
+- [[Modulo1-Input|Módulo 1 - Input]] - Fontes de entrada modulares (mic, Alexa, ESP32, colar...)
+- [[Deployment-Docker-vs-Local|Docker vs Local vs VPS]] - Quando usar cada opção de deployment
 
 ### 🚀 [[02-Implantacao/README|Implantação]]
 Guias para implantar em ambiente de produção e clientes.
-- [[Implantacao-Clientes|Implantação para Clientes]] - Passo a passo
-- [[Deployment-Checklist|Checklist de Deployment]]
-- [[Entrega|Entrega]] - O que você recebeu
-- [[Resumo-Implementacao|Resumo da Implementação]]
+- [[Implantacao-Clientes|Implantação para Clientes]] - Passo a passo completo
+- [[Windows-Mic-Sender-Setup|Setup Windows Mic Sender]] - Captura de microfone no Windows
 
 ### 🔧 [[03-Referencia/README|Referência]]
 Referência rápida de comandos, variáveis e APIs.
-- [[Comandos|Comandos]] - Makefile, CLI, Docker
-- [[Variaveis-Ambiente|Variáveis de Ambiente]] - .env completo
-- [[API-Endpoints|Endpoints da API]] - Webhooks e health checks
-- [[Schema-Banco|Schema do Banco de Dados]] - Tabelas e índices
+- [[Variaveis-Ambiente|Variáveis de Ambiente]] - .env completo (backend + cliente Windows)
+- [[Makefile-Comandos|Makefile - Comandos]] - Atalhos de desenvolvimento
+- [[Dados-e-Backup|Dados e Backup]] - Onde ficam os dados, backup, migração para VPS
+- [[VAD-Calibracao|VAD - Calibração e Debug]] - Ajustar detecção de pausas na fala
 
 ### 🐛 [[04-Troubleshooting/README|Troubleshooting]]
 Diagnóstico e solução de problemas.
 - [[Erros-Comuns|Erros Comuns]] - Soluções rápidas
-- [[Diagnostico|Diagnóstico]] - Como debugar
-- [[FAQ|FAQ]] - Perguntas frequentes
+- [[PostgreSQL-Host-Error|PostgreSQL: localhost vs postgres]] - Erro de conexão Docker
+- [[PortAudio-Missing|PortAudio não encontrado]] - Erro sounddevice no Linux/Windows
 
 ---
 
@@ -58,10 +54,13 @@ Diagnóstico e solução de problemas.
 |-----------|------|
 | Novo no projeto | [[00-Comece-Aqui\|Comece Aqui]] |
 | Quero testar em 5 min | [[Inicio-Rapido\|Início Rápido]] |
-| Desenvolvedor | [[Arquitetura-Geral\|Arquitetura Geral]] + [[Estrutura-Projeto\|Estrutura]] |
+| Desenvolvedor / Arquitetura | [[Arquitetura-Geral\|Arquitetura Geral]] + [[Modulo1-Input\|Módulo 1]] |
+| Usando microfone no Windows | [[Windows-Mic-Sender-Setup\|Setup Windows]] |
 | Implantando para cliente | [[Implantacao-Clientes\|Implantação para Clientes]] |
-| Com problemas | [[Erros-Comuns\|Erros Comuns]] ou [[Diagnostico\|Diagnóstico]] |
-| Preciso de referência | [[Variaveis-Ambiente\|Variáveis]] + [[Comandos\|Comandos]] |
+| Escolhendo Docker vs Local | [[Deployment-Docker-vs-Local\|Docker vs Local vs VPS]] |
+| Com problemas de conexão DB | [[PostgreSQL-Host-Error\|PostgreSQL Host Error]] |
+| Preciso de referência | [[Variaveis-Ambiente\|Variáveis]] + [[Makefile-Comandos\|Makefile]] |
+| Backup / migrar para VPS | [[Dados-e-Backup\|Dados e Backup]] |
 
 ---
 
@@ -75,10 +74,12 @@ Diagnóstico e solução de problemas.
 - **VAD**: Silero VAD
 - **Web**: Flask
 
-### Arquitetura
+### Arquitetura (Módulo 1 — Input modular)
 ```
-Microfone → Silero VAD → Whisper → PostgreSQL
-Alexa    → Flask       ↘          ↗
+Windows Mic  → windows_mic_sender.py → POST /webhook/text ─┐
+Linux Mic    → MicrophoneSource      → raw_audio_queue     ├→ PostgreSQL
+Alexa        → Alexa Cloud           → POST /webhook/alexa ┘
+ESP32/Colar  → firmware              → POST /webhook/text  (futuro)
 ```
 
 ### Configuração Rápida

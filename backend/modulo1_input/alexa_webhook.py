@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from queue import Queue
 from datetime import datetime
 from modulo3_armazenamento.storage_worker import TextItem
+from modulo1_input.text_webhook import register_text_webhook
 from config import settings
 from utils import setup_logger
 
@@ -90,5 +91,8 @@ def create_alexa_app(text_queue: Queue) -> Flask:
         except Exception as e:
             logger.error(f"❌ Alexa webhook error: {e}", exc_info=True)
             return jsonify({"error": "internal_error"}), 500
+
+    # Register generic text webhook for all other sources (Windows, ESP32, etc.)
+    register_text_webhook(app, text_queue)
 
     return app
