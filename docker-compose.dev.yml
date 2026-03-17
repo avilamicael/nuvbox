@@ -1,0 +1,23 @@
+# Development variant with live code reload and extra debugging
+# Usage: docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+
+version: '3.9'
+
+services:
+  backend:
+    environment:
+      LOG_LEVEL: DEBUG
+      PYTHONUNBUFFERED: "1"
+    volumes:
+      # Mount code as volume for hot reload
+      - ./backend:/app
+      - ./logs:/app/logs
+      # Audio device
+      - /dev/snd:/dev/snd
+    # Expose for debugging
+    ports:
+      - "5001:5001"
+      - "5678:5678"  # Python debugger (pdb)
+    # Keep container running for inspection
+    stdin_open: true
+    tty: true

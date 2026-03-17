@@ -1,0 +1,26 @@
+# Python Backend Requirements for Jarvis Project
+
+# Core dependencies
+python-dotenv==1.0.1          # Environment variable management
+
+# Database
+psycopg2-binary==2.9.9        # PostgreSQL adapter (binary, no compilation needed)
+
+# Audio capture and processing
+sounddevice==0.4.6            # Microphone input (cross-platform)
+numpy==1.26.4                 # Numerical operations for audio
+
+# Voice Activity Detection
+silero-vad==5.1               # VAD library
+torch==2.1.2                  # PyTorch CPU (for silero-vad)
+torchvision==0.16.2           # Vision library (required by torch)
+torchaudio==2.1.2             # Audio library (required by torch)
+
+# Transcription
+openai-whisper==20231117      # Speech-to-text model
+
+# Web framework (for Alexa webhook)
+Flask==3.0.0                  # Lightweight web framework
+
+# Optional but recommended
+python-json-logger==2.0.7     # JSON logging for better monitoring

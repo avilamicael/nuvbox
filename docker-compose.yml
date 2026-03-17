@@ -1,0 +1,69 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: jarvis-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-jarvis}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-jarvis}
+      POSTGRES_DB: ${DB_NAME:-jarvis_db}
+      POSTGRES_INITDB_ARGS: "-E UTF8 --locale=pt_BR.UTF-8"
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-jarvis}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - jarvis-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: jarvis-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # Database
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: ${DB_USER:-jarvis}
+      DB_PASSWORD: ${DB_PASSWORD:-jarvis}
+      DB_NAME: ${DB_NAME:-jarvis_db}
+      # Microphone
+      MIC_DEVICE_ID: ${MIC_DEVICE_ID:-0}
+      MIC_SAMPLE_RATE: ${MIC_SAMPLE_RATE:-16000}
+      MIC_CHUNK_SIZE: ${MIC_CHUNK_SIZE:-512}
+      # Whisper
+      WHISPER_MODEL: ${WHISPER_MODEL:-small}
+      WHISPER_LANGUAGE: ${WHISPER_LANGUAGE:-pt}
+      # VAD
+      VAD_SILENCE_DURATION_MS: ${VAD_SILENCE_DURATION_MS:-500}
+      VAD_MIN_SPEECH_DURATION_MS: ${VAD_MIN_SPEECH_DURATION_MS:-300}
+      # Flask
+      FLASK_HOST: 0.0.0.0
+      FLASK_PORT: 5001
+      ALEXA_WEBHOOK_SECRET: ${ALEXA_WEBHOOK_SECRET:-change_me_before_ngrok}
+      # Logging
+      LOG_DIR: /app/logs
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    volumes:
+      - ./backend:/app
+      - ./logs:/app/logs
+      - /dev/snd:/dev/snd  # Audio device passthrough (Linux)
+    ports:
+      - "5001:5001"
+    devices:
+      - /dev/snd  # For microphone access
+    networks:
+      - jarvis-network
+
+networks:
+  jarvis-network:
+    driver: bridge
