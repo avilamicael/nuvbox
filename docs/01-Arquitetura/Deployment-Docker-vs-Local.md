@@ -1,5 +1,5 @@
 ---
-title: Docker vs Local - Como Rodar o Jarvis
+title: Docker vs Local - Como Rodar o Cerebro
 description: Diferença entre rodar 100% em Docker, Backend local, e futuro com VPS
 tags: #arquitetura #docker #deployment #desenvolvimento #producao
 aliases:
@@ -9,7 +9,7 @@ aliases:
 
 # 🚀 Docker vs Local vs VPS - Opções de Deployment
 
-**Pergunta crítica:** Como e onde você quer rodar o Jarvis?
+**Pergunta crítica:** Como e onde você quer rodar o Cerebro?
 
 ---
 
@@ -112,7 +112,7 @@ DB_HOST=localhost python backend/main.py
      │ PC User 1  │   │ PC User 2    │
      │ ┌────────┐ │   │ ┌────────┐   │
      │ │ App    │ │   │ │ App    │   │
-     │ │ Jarvis │ │   │ │ Jarvis │   │
+     │ │ Cerebro │ │   │ │ Cerebro │   │
      │ │(captura│ │   │ │(captura│   │
      │ │ mic)   │ │   │ │ mic)   │   │
      │ └────────┘ │   │ └────────┘   │
@@ -121,7 +121,7 @@ DB_HOST=localhost python backend/main.py
           ┌──────────────────┐
           │ Celular (Android)│
           │ ┌──────────────┐ │
-          │ │ App Jarvis   │ │
+          │ │ App Cerebro   │ │
           │ │ (captura mic)│ │
           │ └──────────────┘ │
           └──────────────────┘

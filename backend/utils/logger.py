@@ -34,7 +34,7 @@ def setup_logger(name: str, log_dir: str = "logs") -> logging.Logger:
     logger.addHandler(stdout_handler)
 
     # File handler (DEBUG and above, rotated daily)
-    log_file = Path(log_dir) / f"jarvis_{datetime.now().strftime('%Y-%m-%d')}.log"
+    log_file = Path(log_dir) / f"cerebro_{datetime.now().strftime('%Y-%m-%d')}.log"
     file_handler = logging.handlers.RotatingFileHandler(
         log_file,
         maxBytes=10 * 1024 * 1024,  # 10 MB

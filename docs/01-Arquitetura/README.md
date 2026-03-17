@@ -5,7 +5,7 @@ tags: [arquitetura, tecnico, design, sistema]
 
 # 🏗️ Arquitetura e Documentação Técnica
 
-Documentação técnica aprofundada do sistema Jarvis Backend.
+Documentação técnica aprofundada do sistema Cerebro Backend.
 
 ## 📖 Documentos
 

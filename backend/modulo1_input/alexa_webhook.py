@@ -24,7 +24,7 @@ def create_alexa_app(text_queue: Queue) -> Flask:
     @app.route("/health", methods=["GET"])
     def health():
         """Health check endpoint."""
-        return jsonify({"status": "ok", "service": "jarvis-alexa-webhook"}), 200
+        return jsonify({"status": "ok", "service": "cerebro-alexa-webhook"}), 200
 
     @app.route("/webhook/alexa", methods=["POST"])
     def alexa_webhook():

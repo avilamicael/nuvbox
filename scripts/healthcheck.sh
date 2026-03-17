@@ -1,9 +1,9 @@
 #!/bin/bash
-# Jarvis Backend Health Check Script
+# Cerebro Backend Health Check Script
 
 set -e
 
-echo "🏥 Jarvis Backend Health Check"
+echo "🏥 Cerebro Backend Health Check"
 echo "======================================"
 
 # Check Docker
@@ -38,7 +38,7 @@ echo ""
 echo "3️⃣  Service Health"
 
 # PostgreSQL
-if docker-compose exec -T postgres psql -U jarvis -d jarvis_db -c "SELECT NOW();" &> /dev/null; then
+if docker-compose exec -T postgres psql -U cerebro -d cerebro_db -c "SELECT NOW();" &> /dev/null; then
     echo "   ✅ PostgreSQL: Connected"
 else
     echo "   ❌ PostgreSQL: Connection failed"
@@ -64,7 +64,7 @@ fi
 # Database stats
 echo ""
 echo "5️⃣  Database Statistics"
-docker-compose exec -T postgres psql -U jarvis -d jarvis_db << EOF
+docker-compose exec -T postgres psql -U cerebro -d cerebro_db << EOF
 SELECT
   'Total transcriptions' as metric,
   COUNT(*)::TEXT as value

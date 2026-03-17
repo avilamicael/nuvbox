@@ -1,4 +1,4 @@
--- Schema for Jarvis Transcription Storage (Módulo 3)
+-- Schema for Cerebro Transcription Storage (Módulo 3)
 
 CREATE TABLE IF NOT EXISTS transcricoes (
     id              BIGSERIAL PRIMARY KEY,

@@ -1,4 +1,4 @@
-# Python Backend Requirements for Jarvis Project
+# Python Backend Requirements for Cerebro Project
 
 # Core dependencies
 python-dotenv==1.0.1          # Environment variable management

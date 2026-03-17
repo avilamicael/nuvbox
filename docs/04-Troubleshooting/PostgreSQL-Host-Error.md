@@ -9,7 +9,7 @@ aliases:
 
 ## Problema
 
-Ao executar `docker-compose up`, o container `jarvis-backend` falha repetidamente com:
+Ao executar `docker-compose up`, o container `cerebro-backend` falha repetidamente com:
 ```
 localhost:5432 - no response
 Attempt 1/30...
@@ -74,7 +74,7 @@ services:
 
 | Contexto | Host | Motivo |
 |----------|------|--------|
-| **Dentro de Docker** | `postgres` | Nome do serviço na rede Docker (jarvis-network) |
+| **Dentro de Docker** | `postgres` | Nome do serviço na rede Docker (cerebro-network) |
 | **Local (máquina host)** | `localhost` | Conexão TCP/IP via porta 5432 publicada |
 | **Dentro de um container Python rodando localmente** | `localhost` | Precisa conectar via port forwarding ou bridge |
 
@@ -93,7 +93,7 @@ services:
 
 Confirme que o container pode resolver o hostname:
 ```bash
-docker exec jarvis-backend pg_isready -h postgres -p 5432 -U jarvis
+docker exec cerebro-backend pg_isready -h postgres -p 5432 -U cerebro
 # Esperado: postgres:5432 - accepting connections
 ```
 

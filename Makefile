@@ -1,7 +1,7 @@
 .PHONY: help up down logs lint test clean reset webhook-test db-recent db-size db-debug db-full
 
 help:
-	@echo "Jarvis Backend - Development Commands"
+	@echo "Cerebro Backend - Development Commands"
 	@echo ""
 	@echo "🐳 CONTAINERS:"
 	@echo "  make up              - Start Docker services"
@@ -62,39 +62,39 @@ webhook-test:
 
 db-recent:
 	@echo "Recent transcriptions..."
-	docker-compose exec -T postgres psql -U jarvis -d jarvis_db -c \
+	docker-compose exec -T postgres psql -U cerebro -d cerebro_db -c \
 		"SELECT id, LEFT(texto, 80) as preview, fonte, criado_em FROM transcricoes ORDER BY id DESC LIMIT 10;"
 
 db-debug:
 	@echo "Debug: últimas 10 transcrições (texto completo)..."
-	docker-compose exec -T postgres psql -U jarvis -d jarvis_db -c \
+	docker-compose exec -T postgres psql -U cerebro -d cerebro_db -c \
 		"SELECT id, fonte, criado_em, length(texto) as chars, duracao_ms, texto FROM transcricoes ORDER BY id DESC LIMIT 10;"
 
 db-full:
 	@echo "Texto completo do último registro..."
-	docker-compose exec -T postgres psql -U jarvis -d jarvis_db -c \
+	docker-compose exec -T postgres psql -U cerebro -d cerebro_db -c \
 		"SELECT id, fonte, criado_em, length(texto) as chars, duracao_ms, chr(10)||texto||chr(10) as texto_completo FROM transcricoes ORDER BY id DESC LIMIT $${N:-1};"
 
 db-size:
 	@echo "Database size..."
-	docker-compose exec -T postgres psql -U jarvis -d jarvis_db -c \
-		"SELECT pg_size_pretty(pg_database_size('jarvis_db')) as tamanho;"
+	docker-compose exec -T postgres psql -U cerebro -d cerebro_db -c \
+		"SELECT pg_size_pretty(pg_database_size('cerebro_db')) as tamanho;"
 
 db-reset:
 	@echo "⚠️  Resetting database (ALL DATA WILL BE DELETED)"
 	@read -p "Are you sure? (type 'yes'): " confirm && [ "$$confirm" = "yes" ] && \
-	docker-compose exec -T postgres psql -U jarvis -d jarvis_db -c \
+	docker-compose exec -T postgres psql -U cerebro -d cerebro_db -c \
 		"TRUNCATE transcricoes CASCADE;" && \
 	echo "✅ Database reset"
 
 db-backup:
 	@echo "Backing up database..."
-	docker-compose exec -T postgres pg_dump -U jarvis jarvis_db > backup_$(shell date +%Y%m%d_%H%M%S).sql
+	docker-compose exec -T postgres pg_dump -U cerebro cerebro_db > backup_$(shell date +%Y%m%d_%H%M%S).sql
 	@echo "✅ Backup saved: backup_$(shell date +%Y%m%d_%H%M%S).sql"
 
 db-stats:
 	@echo "Database statistics..."
-	docker-compose exec -T postgres psql -U jarvis -d jarvis_db -c \
+	docker-compose exec -T postgres psql -U cerebro -d cerebro_db -c \
 		"SELECT fonte, COUNT(*) as count, MIN(criado_em) as first_at, MAX(criado_em) as last_at FROM transcricoes GROUP BY fonte ORDER BY count DESC;"
 
 clean:
@@ -115,4 +115,4 @@ shell:
 	docker-compose run --rm backend /bin/bash
 
 shell-db:
-	docker-compose exec postgres psql -U jarvis -d jarvis_db
+	docker-compose exec postgres psql -U cerebro -d cerebro_db

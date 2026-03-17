@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "🚀 Jarvis Backend Startup"
+echo "🚀 Cerebro Backend Startup"
 
 # Load environment variables (if exists, otherwise use docker-compose env vars)
 if [ -f /app/.env ]; then
@@ -12,9 +12,9 @@ fi
 echo "⏳ Waiting for PostgreSQL to be ready..."
 DB_HOST=${DB_HOST:-postgres}
 DB_PORT=${DB_PORT:-5432}
-DB_USER=${DB_USER:-jarvis}
-DB_PASSWORD=${DB_PASSWORD:-jarvis}
-DB_NAME=${DB_NAME:-jarvis_db}
+DB_USER=${DB_USER:-cerebro}
+DB_PASSWORD=${DB_PASSWORD:-cerebro}
+DB_NAME=${DB_NAME:-cerebro_db}
 
 max_attempts=30
 attempt=0
@@ -42,5 +42,5 @@ PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB
 echo "✅ Schema applied!"
 
 # Start the backend
-echo "🎙️  Starting Jarvis backend..."
+echo "🎙️  Starting Cerebro backend..."
 exec python /app/main.py

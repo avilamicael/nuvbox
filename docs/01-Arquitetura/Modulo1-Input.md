@@ -1,6 +1,6 @@
 ---
 title: Módulo 1 - Input (Fontes de Entrada)
-description: Arquitetura modular de fontes de entrada de áudio e texto do Jarvis
+description: Arquitetura modular de fontes de entrada de áudio e texto do Cerebro
 tags: #modulo1 #input #arquitetura #microfone #alexa #esp32 #wearable #modular
 aliases:
   - Módulo 1
@@ -10,7 +10,7 @@ aliases:
 
 # 🎤 Módulo 1 — Input (Fontes de Entrada)
 
-O Módulo 1 é responsável por **receber dados de qualquer fonte** e colocá-los no pipeline de processamento do Jarvis.
+O Módulo 1 é responsável por **receber dados de qualquer fonte** e colocá-los no pipeline de processamento do Cerebro.
 
 ---
 
@@ -122,7 +122,7 @@ Qualquer nova fonte de dado precisa apenas **enviar um POST** para o backend:
 ```http
 POST /webhook/text
 Content-Type: application/json
-X-Jarvis-Secret: {WEBHOOK_SECRET}
+X-Cerebro-Secret: {WEBHOOK_SECRET}
 
 {
   "text": "o que você disse",
@@ -151,7 +151,7 @@ X-Jarvis-Secret: {WEBHOOK_SECRET}
 
 ### Regra Simples
 
-> **Se você consegue fazer um POST HTTP com um JSON, você consegue adicionar uma nova fonte ao Jarvis.**
+> **Se você consegue fazer um POST HTTP com um JSON, você consegue adicionar uma nova fonte ao Cerebro.**
 
 ---
 
@@ -180,7 +180,7 @@ clients/                       # Scripts externos, rodando FORA do backend
 Todas as fontes externas devem enviar o header de autenticação:
 
 ```
-X-Jarvis-Secret: {WEBHOOK_SECRET}
+X-Cerebro-Secret: {WEBHOOK_SECRET}
 ```
 
 O `WEBHOOK_SECRET` é configurado no `.env`:
@@ -237,7 +237,7 @@ def enviar_texto(texto: str, source: str, metadata: dict = None):
         "http://seu-backend:5001/webhook/text",
         headers={
             "Content-Type": "application/json",
-            "X-Jarvis-Secret": "seu-secret"
+            "X-Cerebro-Secret": "seu-secret"
         },
         json={
             "text": texto,
@@ -249,7 +249,7 @@ def enviar_texto(texto: str, source: str, metadata: dict = None):
     return response.json()
 
 # Usar:
-enviar_texto("olá jarvis", source="windows_mic", metadata={"duration_ms": 1500})
+enviar_texto("olá cerebro", source="windows_mic", metadata={"duration_ms": 1500})
 ```
 
 ---

@@ -1,5 +1,29 @@
 import { useState } from "react";
 
+// Items already completed — pre-checked on load
+const initialChecked = {
+  // Ambiente & Setup
+  a1: true, a2: true, a3: true, a4: true, a5: true,
+  b1: true, b2: true, b3: true,
+  c1: true, c2: true, c3: true, c5: true, c6: true, c8: true,
+  d1: true, d2: true, d3: true, d4: true, d5: true,
+  f1: true, f3: true,
+  // Módulo 1 — captura + VAD
+  m1a1: true, m1a2: true, m1a3: true,
+  m1b1: true, m1b2: true, m1b3: true, m1b4: true,
+  // Módulo 1 — webhook + windows sender
+  wh1: true, wh2: true, wh3: true, wh4: true,
+  ws1: true, ws2: true, ws3: true, ws4: true, ws5: true, ws6: true,
+  // Módulo 2
+  m2a1: true, m2a2: true, m2a3: true, m2a4: true,
+  m2b1: true, m2b2: true,
+  // Módulo 3
+  m3a1: true, m3a3: true, m3a4: true,
+  m3b1: true, m3b2: true, m3b3: true,
+  // Sistema
+  s1: true, s3: true, s4: true, s8: true, s9: true,
+};
+
 const data = {
   sections: [
     {
@@ -11,95 +35,191 @@ const data = {
         {
           title: "Sistema Operacional & Python",
           items: [
-            { id: "a1", text: "Verificar versão do Python instalada", note: "Requer Python 3.10 ou superior. Versões antigas causam incompatibilidade com Whisper e silero-vad." },
-            { id: "a2", text: "Instalar Python 3.10+ se necessário", note: "Recomendado: usar pyenv para gerenciar versões sem conflito com o sistema." },
-            { id: "a3", text: "Criar ambiente virtual dedicado ao projeto", note: "Use: python -m venv jarvis-env | Evita conflito de dependências com outros projetos." },
-            { id: "a4", text: "Ativar o ambiente virtual", note: "Linux/Mac: source jarvis-env/bin/activate | Windows: jarvis-env\\Scripts\\activate" },
-            { id: "a5", text: "Verificar pip atualizado dentro do venv", note: "pip install --upgrade pip" },
+            { id: "a1", text: "Python 3.11+ configurado (via Docker)", note: "Resolvido com multi-stage Docker build usando python:3.11-slim. Sem necessidade de instalar Python no host." },
+            { id: "a2", text: "Docker e Docker Compose instalados e funcionando", note: "docker --version + docker-compose --version. Versão Docker >= 20. Compose v2 (docker compose) ou v1 (docker-compose)." },
+            { id: "a3", text: "Ambiente isolado: Docker container como venv do projeto", note: "O Dockerfile gerencia todas as dependências Python. O bind mount ./backend:/app permite editar código sem rebuild." },
+            { id: "a4", text: "Variáveis de ambiente centralizadas no .env", note: "cp .env.example .env — todas as configurações (banco, mic, whisper, VAD, webhooks) em um único arquivo." },
+            { id: "a5", text: "pip e setuptools atualizados no Docker build", note: "Resolvido no Dockerfile: pip install --upgrade pip setuptools wheel antes dos requirements. Necessário para pacotes sem wheel pré-compilado." },
           ]
         },
         {
           title: "Dependências de Sistema",
           items: [
-            { id: "b1", text: "Instalar ffmpeg no sistema operacional", note: "Whisper depende do ffmpeg para processar áudio. Sem isso, a transcrição não funciona. Linux: apt install ffmpeg | Mac: brew install ffmpeg | Windows: baixar binário e adicionar ao PATH." },
-            { id: "b2", text: "Instalar PortAudio (dependência do PyAudio)", note: "Linux: apt install portaudio19-dev | Mac: brew install portaudio | Windows: geralmente não precisa, PyAudio tem wheel pré-compilado." },
-            { id: "b3", text: "Verificar se microfone USB está reconhecido pelo sistema", note: "Linux: arecord -l | Mac: Preferências > Som > Entrada | Windows: Painel de Som. Faça isso ANTES de instalar qualquer biblioteca." },
+            { id: "b1", text: "ffmpeg instalado no container Docker", note: "Whisper depende do ffmpeg para processar áudio. Instalado no Dockerfile: apt-get install -y ffmpeg" },
+            { id: "b2", text: "PortAudio instalado no container (portaudio19-dev)", note: "Ubuntu 22.04: portaudio19-dev (não libportaudio-dev). Instalado no Dockerfile. Necessário para sounddevice." },
+            { id: "b3", text: "Microfone capturado fora do Docker via windows_mic_sender.py", note: "Docker no WSL2 não tem acesso ao hardware de áudio do Windows. Solução: script Python nativo no Windows (clients/windows_mic_sender.py) captura e envia via HTTP para o backend." },
           ]
         },
         {
           title: "Pacotes Python",
           items: [
-            { id: "c1", text: "Instalar openai-whisper", note: "pip install openai-whisper — vai baixar o modelo small (~460MB) na primeira execução." },
-            { id: "c2", text: "Instalar silero-vad", note: "pip install silero-vad — ou via torch: depende da versão do PyTorch instalada." },
-            { id: "c3", text: "Instalar PyTorch (CPU ou GPU)", note: "Se tiver GPU NVIDIA: instalar versão CUDA para acelerar Whisper significativamente. CPU já funciona para o MVP. Ver pytorch.org para o comando correto." },
-            { id: "c4", text: "Instalar PyAudio", note: "pip install PyAudio — em caso de erro no Windows, usar: pip install pipwin && pipwin install pyaudio" },
-            { id: "c5", text: "Instalar psycopg2-binary", note: "pip install psycopg2-binary — conector Python para PostgreSQL. A versão binary não exige compilação local." },
-            { id: "c6", text: "Instalar python-dotenv", note: "pip install python-dotenv — para gerenciar variáveis de ambiente (API keys, credenciais do banco) sem deixar no código." },
-            { id: "c7", text: "Instalar openai (cliente Python)", note: "pip install openai — para chamar GPT-4o mini no processamento batch." },
-            { id: "c8", text: "Gerar arquivo requirements.txt", note: "pip freeze > requirements.txt — documenta todas as dependências para reproducibilidade." },
+            { id: "c1", text: "openai-whisper instalado", note: "Incluído em backend/requirements.txt. Modelo small (~460MB) baixado automaticamente no primeiro uso." },
+            { id: "c2", text: "silero-vad instalado", note: "Incluído em backend/requirements.txt. Integrado no mic_source.py para detecção de início/fim de fala." },
+            { id: "c3", text: "PyTorch CPU instalado (sem CUDA)", note: "Instalado com --extra-index-url https://download.pytorch.org/whl/cpu. Necessário usar --extra-index-url (não --index-url) para não bloquear outros pacotes como sounddevice." },
+            { id: "c4", text: "sounddevice instalado (substituiu PyAudio)", note: "Usamos sounddevice ao invés de PyAudio — menos problemas de compilação no WSL2 e Windows. pip install sounddevice" },
+            { id: "c5", text: "psycopg2-binary instalado", note: "Conector Python para PostgreSQL. A versão binary não exige compilação local. Incluído em requirements.txt." },
+            { id: "c6", text: "python-dotenv instalado", note: "Usado no backend (config.py) e no windows_mic_sender.py para ler .env automaticamente." },
+            { id: "c7", text: "openai (cliente Python) — para Módulo 4", note: "Necessário para GPT-4o mini no processamento batch. NÃO instalado ainda — aguarda Módulo 4." },
+            { id: "c8", text: "requirements.txt gerado e versionado", note: "backend/requirements.txt contém todas as dependências com versões pinadas. Usado pelo Dockerfile para build reproduzível." },
           ]
         },
         {
           title: "PostgreSQL",
           items: [
-            { id: "d1", text: "Instalar PostgreSQL localmente", note: "Versão 14+ recomendada. Linux: apt install postgresql | Mac: brew install postgresql | Windows: installer oficial em postgresql.org." },
-            { id: "d2", text: "Iniciar serviço do PostgreSQL", note: "Linux: sudo systemctl start postgresql | Mac: brew services start postgresql" },
-            { id: "d3", text: "Criar banco de dados para o projeto", note: "createdb jarvis_db ou via psql: CREATE DATABASE jarvis_db;" },
-            { id: "d4", text: "Criar usuário dedicado ao projeto", note: "Não usar o usuário postgres padrão em desenvolvimento. CREATE USER jarvis_user WITH PASSWORD 'senha'; GRANT ALL ON DATABASE jarvis_db TO jarvis_user;" },
-            { id: "d5", text: "Testar conexão com psycopg2", note: "Escrever um script simples de 5 linhas que conecta e imprime a versão do banco. Se falhar aqui, não adianta avançar." },
+            { id: "d1", text: "PostgreSQL 15 rodando via Docker", note: "Imagem postgres:15-alpine no docker-compose.yml. Sem instalação local necessária." },
+            { id: "d2", text: "Dados persistidos em ./data/postgres/ (bind mount)", note: "Volume bind mount em vez de volume nomeado Docker. Facilita backup manual e migração para VPS: basta copiar a pasta data/." },
+            { id: "d3", text: "Banco criado automaticamente via POSTGRES_DB", note: "docker-compose.yml define POSTGRES_DB=${DB_NAME:-cerebro_db}. O container cria o banco na primeira inicialização." },
+            { id: "d4", text: "Usuário dedicado criado via POSTGRES_USER", note: "docker-compose.yml define POSTGRES_USER=${DB_USER:-cerebro}. Credenciais configuradas no .env." },
+            { id: "d5", text: "Schema aplicado automaticamente no boot", note: "entrypoint.sh aplica backend/modulo3_armazenamento/schema.sql via psql a cada inicialização (usa CREATE TABLE IF NOT EXISTS — idempotente)." },
           ]
         },
         {
           title: "API OpenAI",
           items: [
-            { id: "e1", text: "Criar conta na OpenAI se não tiver", note: "platform.openai.com" },
-            { id: "e2", text: "Adicionar créditos (mínimo $5)", note: "GPT-4o mini é barato. $5 dura semanas em uso moderado. Mas sem saldo a API rejeita as chamadas silenciosamente às vezes." },
-            { id: "e3", text: "Gerar API key", note: "Guardar em arquivo .env: OPENAI_API_KEY=sk-... | NUNCA commitar essa chave no git." },
-            { id: "e4", text: "Adicionar .env ao .gitignore", note: "Passo crítico antes de qualquer commit. Vazamento de API key é um problema sério." },
-            { id: "e5", text: "Testar chamada simples à API", note: "Uma chamada de teste com 'Olá' para confirmar que a key funciona e tem crédito." },
+            { id: "e1", text: "Criar conta na OpenAI", note: "platform.openai.com — necessário para Módulo 4 (batch processing com GPT-4o mini)." },
+            { id: "e2", text: "Adicionar créditos (mínimo $5)", note: "GPT-4o mini é barato. $5 dura semanas em uso moderado. Necessário para Módulo 4." },
+            { id: "e3", text: "Gerar API key e adicionar ao .env", note: "OPENAI_API_KEY=sk-... no .env. NUNCA commitar essa chave no git. O .env já está no .gitignore." },
+            { id: "e4", text: ".env no .gitignore", note: "Verificar: cat .gitignore | grep .env. O arquivo .env.example (sem segredos) é commitado; o .env real não." },
+            { id: "e5", text: "Testar chamada simples à API", note: "Uma chamada de teste com 'Olá' para confirmar key funcionando. Aguarda Módulo 4." },
           ]
         },
         {
           title: "Estrutura de Pastas",
           items: [
-            { id: "f1", text: "Criar estrutura de diretórios do projeto", note: "Sugestão: /jarvis | /modules (input, transcricao, storage, ia, consulta) | /config | /scripts | /tests | /logs" },
-            { id: "f2", text: "Inicializar repositório git", note: "git init + criar .gitignore com: .env, __pycache__, *.pyc, jarvis-env/, logs/*.log" },
-            { id: "f3", text: "Criar arquivo de configuração central", note: "config/settings.py ou config.yaml centralizando: paths, thresholds do VAD, modelo do Whisper, schedule do batch." },
+            { id: "f1", text: "Estrutura de diretórios criada", note: "backend/ (modulo1_input, modulo2_transcricao, modulo3_armazenamento, utils) | clients/ | docs/ | data/ | frontend/ | logs/" },
+            { id: "f2", text: "Repositório git inicializado", note: "git init + .gitignore com: .env, __pycache__, data/postgres/, venv/, logs/*.log" },
+            { id: "f3", text: "Configuração central em config.py", note: "backend/config.py lê todas as variáveis do .env via python-dotenv e expõe objeto Settings com sub-objetos (db, mic, whisper, vad, flask)." },
           ]
         }
       ]
     },
     {
       id: "modulo1",
-      label: "MÓDULO 1 — INPUT & VAD",
+      label: "MÓDULO 1 — INPUT (FONTES MODULARES)",
       color: "#FF6B35",
       icon: "🎙️",
       groups: [
         {
-          title: "Captura de Áudio",
+          title: "Captura de Áudio (Linux/Docker)",
           items: [
-            { id: "m1a1", text: "Listar dispositivos de áudio disponíveis", note: "Script simples com PyAudio para listar todos os inputs. Anotar o índice do microfone USB que vai usar." },
-            { id: "m1a2", text: "Implementar captura contínua em chunks", note: "Capturar em janelas de 30ms a 100ms. Chunks muito grandes atrasam a detecção de voz. Muito pequenos aumentam overhead." },
-            { id: "m1a3", text: "Configurar taxa de amostragem em 16kHz", note: "Whisper espera 16kHz. Se capturar em outra taxa (44.1kHz do microfone), precisa fazer resample antes de passar para o Whisper." },
-            { id: "m1a4", text: "Testar captura básica salvando em arquivo .wav", note: "Antes de conectar ao Whisper, salvar 10 segundos de áudio e ouvir. Se o arquivo soar bem, o hardware está OK." },
+            { id: "m1a1", text: "Listar dispositivos de áudio disponíveis", note: "make test ou: docker-compose run --rm backend python -c \"import sounddevice as sd; print(sd.query_devices())\"" },
+            { id: "m1a2", text: "Captura contínua em chunks com sounddevice", note: "Implementado em backend/modulo1_input/mic_source.py usando sd.InputStream. Chunk de 512 amostras a 16kHz." },
+            { id: "m1a3", text: "Taxa de amostragem em 16kHz (Whisper)", note: "Configurável via MIC_SAMPLE_RATE no .env (padrão 16000). Whisper espera 16kHz — não mudar sem resample." },
+            { id: "m1a4", text: "Teste de captura: salvar .wav e ouvir", note: "Pendente: testar gravando 10s de áudio em arquivo para confirmar qualidade do hardware antes de conectar ao Whisper." },
           ]
         },
         {
-          title: "VAD — Detecção de Voz",
+          title: "VAD — Detecção de Voz (Silero)",
           items: [
-            { id: "m1b1", text: "Carregar modelo silero-vad", note: "O modelo é carregado via torch.hub. Na primeira vez faz download. Depois fica em cache local." },
-            { id: "m1b2", text: "Implementar detecção de início de fala", note: "Quando VAD detecta voz: começar a acumular chunks de áudio em buffer." },
-            { id: "m1b3", text: "Implementar detecção de fim de fala", note: "Após X segundos de silêncio (ex: 1.5s), considerar utterance completa e enviar para transcrição. Ajustar threshold conforme ambiente." },
-            { id: "m1b4", text: "Calibrar threshold de sensibilidade", note: "Ambientes barulhentos precisam de threshold mais alto. Testar com ruído real do seu ambiente (ac, teclado, etc)." },
-            { id: "m1b5", text: "Implementar modo sleep por inatividade", note: "Após 10 min sem voz detectada, pausar captura e reduzir uso de CPU." },
-            { id: "m1b6", text: "Implementar wake por detecção de voz", note: "Manter uma thread leve ouvindo mesmo no sleep para reativar quando voz aparecer." },
+            { id: "m1b1", text: "Modelo silero-vad carregado e funcionando", note: "Carregado em mic_source.py. Na primeira execução faz download do modelo (~2MB). Cache em ~/.cache/torch." },
+            { id: "m1b2", text: "Detecção de início de fala implementada", note: "Quando VAD detecta voz: acumula chunks em buffer. Configurado via VAD_MIN_SPEECH_DURATION_MS no .env." },
+            { id: "m1b3", text: "Detecção de fim de fala implementada", note: "Após VAD_SILENCE_DURATION_MS ms de silêncio, utterance é considerada completa e enviada para transcrição. Padrão aumentado para 1500ms para acomodar pausas de pensamento." },
+            { id: "m1b4", text: "VAD calibrado para pausas longas", note: "VAD_SILENCE_DURATION_MS=1500 resolve frases cortadas no meio. Documentação de calibração em docs/03-Referencia/VAD-Calibracao.md." },
+            { id: "m1b5", text: "Modo sleep por inatividade (futuro)", note: "Após N min sem voz, pausar captura e reduzir CPU. Reativar automaticamente quando voz detectada." },
+            { id: "m1b6", text: "Wake automático por detecção de voz (futuro)", note: "Thread leve mantém escuta mesmo no sleep para reativar o pipeline completo quando voz aparecer." },
+          ]
+        },
+        {
+          title: "Webhook Genérico (/webhook/text)",
+          items: [
+            { id: "wh1", text: "Endpoint POST /webhook/text criado no Flask", note: "Implementado em backend/modulo1_input/text_webhook.py. Aceita qualquer fonte via campo 'source'. Registrado via register_text_webhook(app, text_queue)." },
+            { id: "wh2", text: "Validação de campos obrigatórios (text, source, timestamp)", note: "Retorna 400 se campos faltando. Aceita fontes: windows_mic, alexa, esp32, arquivo, manual, e qualquer string nova." },
+            { id: "wh3", text: "Texto injetado direto na text_queue (bypassa Whisper)", note: "Fontes externas já transcreveram o áudio localmente — não faz sentido reprocessar. Vai direto para StorageWorker." },
+            { id: "wh4", text: "Testado via make webhook-test e curl", note: "make webhook-test envia POST de teste. Verificar com make db-recent se o registro aparece no banco." },
+          ]
+        },
+        {
+          title: "Cliente Windows — Script (windows_mic_sender.py)",
+          items: [
+            { id: "ws1", text: "Script clients/windows_mic_sender.py criado", note: "Script Python nativo Windows (fora do WSL2). Captura mic, transcreve com Whisper local, envia texto para o backend via HTTP." },
+            { id: "ws2", text: "100% configurável via .env — sem hardcode", note: "Usa python-dotenv para ler BACKEND_URL, CLIENT_SOURCE_ID, MIC_DEVICE_ID, WHISPER_MODEL, VAD_SILENCE_DURATION_MS, etc. do .env. Não é necessário editar o código." },
+            { id: "ws3", text: "Silero VAD integrado localmente no script", note: "Mesmo modelo e lógica do backend. VAD_SILENCE_DURATION_MS controlado pelo .env. Resolvido: .copy() no array numpy para evitar warning do PyTorch." },
+            { id: "ws4", text: "Whisper integrado localmente no script", note: "Transcrição acontece no Windows, não no backend. Reduz carga no servidor e mantém latência baixa mesmo com backend remoto." },
+            { id: "ws5", text: "Texto enviado via POST /webhook/text", note: "Payload: {text, source: CLIENT_SOURCE_ID, timestamp}. Backend recebe e armazena sem reprocessar." },
+            { id: "ws6", text: "Pipeline end-to-end testado e funcionando", note: "Falar → windows_mic_sender captura → VAD detecta fim → Whisper transcreve → POST para backend → salvo no banco. Verificado via make db-debug." },
           ]
         },
         {
           title: "Contexto de Ativação",
           items: [
-            { id: "m1c1", text: "Implementar janela de horário configurável", note: "Ler do config: hora_inicio=8, hora_fim=22. Não gravar fora desse horário. Simples de implementar com datetime." },
-            { id: "m1c2", text: "Log de ativação e desativação", note: "Registrar quando o sistema ligou, desligou e quantos fragmentos capturou. Útil para debug." },
+            { id: "m1c1", text: "Janela de horário configurável (ex: 8h-22h)", note: "Ler do config: hora_inicio, hora_fim. Não gravar fora desse horário. Implementar com datetime simples." },
+            { id: "m1c2", text: "Log de ativação, desativação e estatísticas", note: "Parcialmente feito via logging INFO. Melhorar: registrar quantos fragmentos capturados, tempo de atividade, erros de envio." },
+          ]
+        }
+      ]
+    },
+    {
+      id: "cliente_windows_app",
+      label: "CLIENTE WINDOWS — APP DESKTOP",
+      color: "#38BDF8",
+      icon: "🖥️",
+      groups: [
+        {
+          title: "Análise & Decisão de Stack",
+          items: [
+            { id: "app1", text: "Definir stack tecnológica do app", note: "Opções: Python+PyQt6 (mesmo stack, mais simples), Electron+Node.js (UI web, tray fácil), Tauri+Rust (bundle leve, UI web), C# WPF (nativo Windows). Considerar: bundle size, UX, manutenção a longo prazo." },
+            { id: "app2", text: "Decidir arquitetura de transcrição: local vs remota", note: "Local (Whisper no app): privacidade, funciona offline, mais pesado para baixar. Remota (backend transcreve): app leve, depende de rede. Recomendação MVP: local, igual ao windows_mic_sender.py atual." },
+            { id: "app3", text: "Definir features do MVP do app", note: "MVP mínimo: tray icon (ativo/pausado), captura + VAD + Whisper + envio. Janela de configurações básica. Tudo configurável sem editar código." },
+            { id: "app4", text: "Definir formato de distribuição", note: "Opções: instalador .exe (NSIS/Inno Setup), portable .exe, winget/chocolatey. Para uso pessoal: portable .exe é suficiente no início." },
+          ]
+        },
+        {
+          title: "Setup do Projeto App",
+          items: [
+            { id: "app5", text: "Criar estrutura de pastas do projeto do app", note: "Dentro do repo atual (clients/windows_app/) ou repo separado. Separado facilita build pipeline independente." },
+            { id: "app6", text: "Configurar ambiente de desenvolvimento da stack escolhida", note: "Ex se PyQt6: python -m venv app-env + pip install PyQt6 sounddevice silero-vad openai-whisper. Se Electron: npm init + electron + node-addon-api." },
+            { id: "app7", text: "Configurar pipeline de build/empacotamento", note: "PyInstaller (Python), electron-builder (Electron), Tauri CLI. Configurar para gerar .exe standalone sem dependências externas." },
+          ]
+        },
+        {
+          title: "Core — Captura & VAD",
+          items: [
+            { id: "app8", text: "Captura de microfone funcionando no app (16kHz, float32)", note: "Reusar lógica do windows_mic_sender.py. Garantir seleção de dispositivo de entrada configurável." },
+            { id: "app9", text: "Silero VAD integrado no app", note: "Mesmo modelo do script atual. Parâmetros (silence_ms, min_speech_ms) lidos da config do app." },
+            { id: "app10", text: "Buffer de áudio thread-safe entre captura e VAD", note: "Queue ou buffer circular. Captura roda numa thread, VAD em outra — evitar perda de chunks durante processamento." },
+            { id: "app11", text: "Configuração de VAD acessível na UI (não só no .env)", note: "Slider ou campo numérico para VAD_SILENCE_DURATION_MS na janela de configurações do app." },
+          ]
+        },
+        {
+          title: "Transcrição Local",
+          items: [
+            { id: "app12", text: "Whisper integrado no app Windows", note: "openai-whisper ou whisper.cpp (via binding Python). whisper.cpp é muito mais rápido em CPU — considerar para melhor UX no app." },
+            { id: "app13", text: "Modelo e idioma configuráveis via UI", note: "Dropdown para selecionar tiny/base/small/medium. Campo de idioma (pt, en, auto). Mudança salva na config." },
+            { id: "app14", text: "Medir e exibir latência de transcrição", note: "Mostrar tempo de processamento na UI. Útil para o usuário entender delay e escolher modelo adequado para seu hardware." },
+          ]
+        },
+        {
+          title: "Integração com Backend",
+          items: [
+            { id: "app15", text: "Cliente HTTP para POST /webhook/text", note: "Mesmo payload do windows_mic_sender.py: {text, source, timestamp}. O endpoint do backend não muda." },
+            { id: "app16", text: "BACKEND_URL e CLIENT_SOURCE_ID configuráveis na UI", note: "Campo de texto para URL (localhost, IP local, domínio VPS). Campo para nome desta máquina no banco." },
+            { id: "app17", text: "Health check e indicador de conexão em tempo real", note: "GET /health (ou timeout no POST). Ícone verde/vermelho na UI mostrando se backend está acessível." },
+            { id: "app18", text: "Fila local com retry quando backend offline", note: "Se POST falha, guardar em fila em memória (ou SQLite local). Tentar reenviar quando conexão voltar. Não perder transcrições." },
+          ]
+        },
+        {
+          title: "Interface — Tray Icon & Configurações",
+          items: [
+            { id: "app19", text: "Tray icon com status visual", note: "Ícone no systray do Windows com estados: 🟢 gravando, ⏸️ pausado, 🔴 erro/desconectado. Clique para pausar/retomar." },
+            { id: "app20", text: "Menu de contexto do tray icon", note: "Botão direito: Pausar/Retomar, Abrir Configurações, Ver Log, Sair. Ícone muda conforme estado." },
+            { id: "app21", text: "Janela de configurações completa", note: "Abas ou seções: Microfone (dropdown de dispositivos), Backend (URL, source_id), VAD (silence_ms, min_speech_ms), Whisper (modelo, idioma). Botão Salvar + Testar Conexão." },
+            { id: "app22", text: "Contador/log de transcrições enviadas", note: "Quantidade de transcrições enviadas nesta sessão, última enviada (preview), erros de envio. Pode ser tooltip no tray icon." },
+          ]
+        },
+        {
+          title: "Persistência & Auto-start",
+          items: [
+            { id: "app23", text: "Configurações salvas localmente (config.json ou .env)", note: "Arquivo de config em %APPDATA%\\Cerebro\\ ou pasta do app. Carregado automaticamente na inicialização." },
+            { id: "app24", text: "Auto-start com login do Windows", note: "Adicionar entrada em HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run ou criar atalho na pasta Startup. Configurável (toggle na UI)." },
+            { id: "app25", text: "Migração de config ao atualizar app", note: "Ao lançar nova versão, preservar configurações existentes. Versionar o formato do config.json." },
+          ]
+        },
+        {
+          title: "Build & Distribuição",
+          items: [
+            { id: "app26", text: "Gerar executável standalone (.exe)", note: "PyInstaller: pyinstaller --onefile --windowed app.py. Electron: electron-builder --win. Testar em máquina sem o ambiente de dev." },
+            { id: "app27", text: "Criar installer para usuário final", note: "Inno Setup ou NSIS (Python), electron-builder NSIS (Electron). Installer cria atalho, configura auto-start opcional." },
+            { id: "app28", text: "Documentar instalação e configuração inicial", note: "Guia de instalação: baixar .exe, rodar, configurar URL do backend, selecionar microfone, testar. Máximo 5 passos." },
           ]
         }
       ]
@@ -113,19 +233,19 @@ const data = {
         {
           title: "Whisper Local",
           items: [
-            { id: "m2a1", text: "Baixar e testar modelo Whisper Small", note: "whisper.load_model('small') — ~460MB. Testar com arquivo .wav de 30 segundos. Medir tempo de transcrição no seu hardware." },
-            { id: "m2a2", text: "Implementar função de transcrição de buffer", note: "Recebe array numpy de áudio (16kHz), retorna string com texto transcrito + confidence se disponível." },
-            { id: "m2a3", text: "Configurar idioma fixo (pt-BR)", note: "Passar language='pt' para o Whisper. Sem isso ele tenta detectar o idioma e desperdiça tempo e tokens." },
-            { id: "m2a4", text: "Implementar fila de transcrição", note: "VAD produz fragmentos mais rápido do que Whisper processa (em CPU). Usar queue.Queue para não perder fragmentos." },
-            { id: "m2a5", text: "Medir latência de transcrição", note: "Quanto tempo demora para transcrever 10s de áudio no seu hardware? Isso define se a fila vai crescer ou não." },
-            { id: "m2a6", text: "Implementar filtro de transcrições curtas/inúteis", note: "Transcrições com menos de 3 palavras ou apenas ruído ('hmm', 'ah', 'né') devem ser descartadas ou marcadas com importance_score baixo." },
+            { id: "m2a1", text: "Modelo Whisper Small carregado e funcionando", note: "whisper.load_model('small') em backend/modulo2_transcricao/whisper_engine.py. Modelo baixado no primeiro uso (~460MB). Cache em /root/.cache/whisper." },
+            { id: "m2a2", text: "Função de transcrição de buffer implementada", note: "Recebe array numpy float32 (16kHz), retorna dict com text, language, segments. Implementado em whisper_engine.py." },
+            { id: "m2a3", text: "Idioma fixo configurado (pt)", note: "WHISPER_LANGUAGE=pt no .env. Evita detecção automática de idioma que desperdiça tempo. Configurável para outros idiomas." },
+            { id: "m2a4", text: "Fila de transcrição implementada (raw_audio_queue)", note: "Queue thread-safe em main.py. VAD produz AudioChunks, TranscriptionWorker consome. Sem bloqueio do pipeline de captura durante transcrição." },
+            { id: "m2a5", text: "Medir latência de transcrição no hardware alvo", note: "Pendente: cronometrar transcrição de 10s de áudio no hardware do usuário. Essa medição define se haverá backlog na fila." },
+            { id: "m2a6", text: "Filtro de transcrições curtas/inúteis", note: "Pendente: descartar transcrições com menos de 3 palavras ou apenas ruído ('hmm', 'né', sons curtos). Reduz ruído no banco." },
           ]
         },
         {
           title: "Metadados",
           items: [
-            { id: "m2b1", text: "Capturar timestamp de início e fim de cada fragmento", note: "datetime.now() no início do chunk e no fim. Duração = diferença entre os dois." },
-            { id: "m2b2", text: "Registrar fonte do input", note: "Para o MVP: sempre 'microfone_pc'. Mas já deixar o campo preparado para 'alexa', 'esp32', 'arquivo'." },
+            { id: "m2b1", text: "Timestamp de início/fim de cada fragmento capturado", note: "AudioChunk.captured_at preenchido em mic_source.py. duracao_ms calculado e salvo no banco." },
+            { id: "m2b2", text: "Campo 'fonte' registrado em todas as transcrições", note: "Coluna 'fonte' na tabela transcricoes. Valores: windows_mic, alexa, linux_mic, manual. Configurável via CLIENT_SOURCE_ID no .env." },
           ]
         }
       ]
@@ -139,19 +259,19 @@ const data = {
         {
           title: "Schema do Banco",
           items: [
-            { id: "m3a1", text: "Criar tabela 'transcricoes'", note: "Campos: id (serial PK), texto (text), data_hora (timestamptz), duracao_segundos (float), fonte (varchar), status (varchar default 'nao_processado'), usuario_id (int)." },
-            { id: "m3a2", text: "Criar tabela 'usuarios'", note: "Campos: id (serial PK), nome (varchar), criado_em (timestamptz). Mesmo para uso solo, multi-usuário desde o início evita refatoração dolorosa depois." },
-            { id: "m3a3", text: "Criar índice em data_hora e status", note: "CREATE INDEX idx_transcricoes_status ON transcricoes(status); — o batch vai fazer query por status='nao_processado' toda noite." },
-            { id: "m3a4", text: "Criar script de migration versionado", note: "Não rodar SQL manual. Criar scripts numerados: 001_create_transcricoes.sql, 002_create_usuarios.sql. Facilita replicar o banco em outra máquina." },
+            { id: "m3a1", text: "Tabela 'transcricoes' criada com todos os campos", note: "id, texto, fonte, criado_em, duracao_ms, modelo_whisper, idioma, sessao_id, metadados (JSONB). Schema em backend/modulo3_armazenamento/schema.sql." },
+            { id: "m3a2", text: "Tabela 'usuarios' — aguarda multi-usuário", note: "Não implementada ainda. Sistema atual é single-user. Criar quando escalar para múltiplos usuários (Módulo 5+)." },
+            { id: "m3a3", text: "Índices em fonte e criado_em criados", note: "idx_transcricoes_fonte e idx_transcricoes_criado_em DESC. Consultas por data e por fonte serão performáticas." },
+            { id: "m3a4", text: "Schema versionado e aplicado automaticamente", note: "schema.sql usa CREATE TABLE IF NOT EXISTS — idempotente. Aplicado pelo entrypoint.sh a cada boot. Futuras migrations precisarão de controle de versão (Alembic, Flyway)." },
           ]
         },
         {
           title: "Persistência",
           items: [
-            { id: "m3b1", text: "Implementar função save_transcricao()", note: "Recebe: texto, data_hora, duracao, fonte, usuario_id. Salva no banco. Retorna o ID gerado. Tratar exceções de conexão." },
-            { id: "m3b2", text: "Implementar retry em caso de falha de conexão", note: "Banco pode estar temporariamente indisponível. 3 tentativas com backoff exponencial antes de logar erro." },
-            { id: "m3b3", text: "Implementar log de erros de persistência", note: "Se não conseguir salvar no banco, salvar em arquivo local temporário para não perder a transcrição." },
-            { id: "m3b4", text: "Testar volume: inserir 1000 transcrições simuladas", note: "Garante que o schema aguenta uso real sem degradação de performance." },
+            { id: "m3b1", text: "StorageWorker implementado (text_queue → INSERT)", note: "backend/modulo3_armazenamento/storage_worker.py consome text_queue e insere na tabela transcricoes. Thread dedicada, sem bloquear transcrição." },
+            { id: "m3b2", text: "ThreadedConnectionPool para múltiplas threads", note: "psycopg2.pool.ThreadedConnectionPool (min=1, max=5). Flask (Alexa) e StorageWorker compartilham pool sem conflito." },
+            { id: "m3b3", text: "Erros de persistência logados", note: "Exceções capturadas e logadas via utils/logger.py. Sistema não quebra em caso de falha pontual de DB." },
+            { id: "m3b4", text: "Teste de volume: 1000 inserções simuladas", note: "Pendente: script de stress test para validar performance do schema com volume real." },
           ]
         }
       ]
@@ -178,18 +298,18 @@ const data = {
             { id: "m4b1", text: "Montar prompt do sistema com perfil do usuário (Módulo 0)", note: "O prompt deve incluir: quem é o usuário, suas categorias raiz, regras de categorização e exemplos. Isso é o que torna a categorização precisa." },
             { id: "m4b2", text: "Definir formato de saída JSON estruturado", note: "Pedir à LLM para retornar JSON com: entidades[], topico_principal, topico_secundario, importance_score, resumo_curto. Usar json_mode se disponível." },
             { id: "m4b3", text: "Implementar validação do JSON retornado", note: "LLM às vezes retorna JSON malformado. Validar com try/except json.loads() e ter fallback para reprocessar ou descartar." },
-            { id: "m4b4", text: "Testar prompt com 20 transcrições diversas manualmente", note: "Antes de automatizar, rodar manualmente e avaliar: as entidades fazem sentido? Os tópicos estão corretos? Ajustar prompt conforme os erros encontrados." },
+            { id: "m4b4", text: "Testar prompt com 20 transcrições reais manualmente", note: "Antes de automatizar, rodar manualmente e avaliar: as entidades fazem sentido? Os tópicos estão corretos? Ajustar prompt conforme os erros." },
           ]
         },
         {
           title: "Pipeline Batch",
           items: [
-            { id: "m4c1", text: "Implementar script de batch processamento", note: "Query: SELECT * FROM transcricoes WHERE status='nao_processado' ORDER BY data_hora. Processar em lotes de 10-20 para não estourar contexto." },
-            { id: "m4c2", text: "Implementar deduplicação de entidades", note: "Antes de inserir entidade, checar se já existe pelo nome (case-insensitive). Se sim, usar a existente. Evita 'João' e 'joão' como entidades separadas." },
+            { id: "m4c1", text: "Script de batch processamento", note: "Query: SELECT * FROM transcricoes WHERE status='nao_processado' ORDER BY criado_em. Processar em lotes de 10-20 para não estourar contexto da LLM." },
+            { id: "m4c2", text: "Deduplicação de entidades", note: "Antes de inserir entidade, checar se já existe pelo nome (case-insensitive). Se sim, usar a existente. Evita 'João' e 'joão' como entidades separadas." },
             { id: "m4c3", text: "Atualizar status para 'processado' após sucesso", note: "UPDATE transcricoes SET status='processado' WHERE id=X — só após confirmar que todos os dados foram salvos nas tabelas estruturadas." },
-            { id: "m4c4", text: "Implementar agendamento do batch", note: "Linux/Mac: cron job às 23:00. Windows: Task Scheduler. Ou usar APScheduler dentro do próprio Python." },
-            { id: "m4c5", text: "Implementar log detalhado do batch", note: "Registrar: quantas transcrições processadas, custo estimado em tokens, erros encontrados, tempo total de execução." },
-            { id: "m4c6", text: "Implementar limite de custo diário", note: "Se o batch está custando mais do que $X no dia, parar e alertar. Proteção contra loop infinito ou volume inesperado." },
+            { id: "m4c4", text: "Agendamento do batch (diário, ex: 23h)", note: "Linux: cron job. Windows: Task Scheduler. Ou APScheduler dentro do Python para independência de SO." },
+            { id: "m4c5", text: "Log detalhado do batch", note: "Registrar: quantas transcrições processadas, custo estimado em tokens, erros, tempo total de execução." },
+            { id: "m4c6", text: "Limite de custo diário", note: "Se o batch está custando mais do que $X/dia, parar e alertar. Proteção contra loop infinito ou volume inesperado." },
           ]
         }
       ]
@@ -203,12 +323,12 @@ const data = {
         {
           title: "Interface Web Local",
           items: [
-            { id: "m6a1", text: "Instalar Flask ou FastAPI", note: "Flask é mais simples para MVP. FastAPI é melhor se quiser async e documentação automática. Para começar: Flask." },
-            { id: "m6a2", text: "Criar endpoint de busca por texto", note: "GET /search?q=termo — faz ILIKE no banco em texto e retorna fragmentos ordenados por data." },
-            { id: "m6a3", text: "Criar endpoint de busca por entidade", note: "GET /entity/João — retorna todos os fragmentos ligados à entidade 'João' com datas e tópicos." },
-            { id: "m6a4", text: "Criar página HTML básica de busca", note: "Não precisa ser bonita. Campo de input + botão + lista de resultados. Funcionalidade primeiro." },
-            { id: "m6a5", text: "Implementar exibição de contexto nos resultados", note: "Mostrar: texto do fragmento, data/hora, tópico, entidades relacionadas. Dar contexto suficiente para o fragmento fazer sentido." },
-            { id: "m6a6", text: "Adicionar filtro por período (data início / data fim)", note: "'Tudo que falei sobre João em fevereiro' — filtro de data é essencial e simples de implementar." },
+            { id: "m6a1", text: "Flask já instalado e rodando (backend usa)", note: "Flask está no requirements.txt e em uso para os webhooks. Reutilizar para endpoints de consulta." },
+            { id: "m6a2", text: "Endpoint de busca por texto (GET /search?q=)", note: "ILIKE no banco em texto e retorna fragmentos ordenados por data. Simples, mas muito útil." },
+            { id: "m6a3", text: "Endpoint de busca por entidade (GET /entity/:nome)", note: "Retorna todos os fragmentos ligados à entidade com datas e tópicos." },
+            { id: "m6a4", text: "Página HTML básica de busca", note: "Campo de input + botão + lista de resultados. Funcionalidade primeiro, estética depois." },
+            { id: "m6a5", text: "Exibição de contexto nos resultados", note: "Mostrar: texto, data/hora, tópico, entidades relacionadas. Dar contexto suficiente para o fragmento fazer sentido." },
+            { id: "m6a6", text: "Filtro por período (data início / data fim)", note: "'Tudo que falei sobre João em fevereiro' — filtro de data é essencial e simples de implementar." },
           ]
         }
       ]
@@ -225,8 +345,8 @@ const data = {
             { id: "m7a1", text: "Instalar sentence-transformers", note: "pip install sentence-transformers — gera embeddings localmente sem custo de API. Modelo recomendado para PT-BR: paraphrase-multilingual-MiniLM-L12-v2" },
             { id: "m7a2", text: "Instalar pgvector no PostgreSQL", note: "Extensão do Postgres para busca vetorial. CREATE EXTENSION vector; — Evita precisar de banco separado (Pinecone, Weaviate) no MVP." },
             { id: "m7a3", text: "Adicionar coluna embedding na tabela fragmentos", note: "ALTER TABLE fragmentos ADD COLUMN embedding vector(384); — 384 dimensões para o modelo MiniLM." },
-            { id: "m7a4", text: "Gerar embeddings no pipeline batch", note: "Após processar cada fragmento, gerar embedding do texto e salvar. Adicionar ao custo estimado do batch (é local, sem custo de API)." },
-            { id: "m7a5", text: "Implementar busca por similaridade semântica", note: "SELECT texto, 1-(embedding <=> $1) AS score FROM fragmentos ORDER BY score DESC LIMIT 10 — sintaxe pgvector. Retorna os fragmentos mais similares à pergunta." },
+            { id: "m7a4", text: "Gerar embeddings no pipeline batch", note: "Após processar cada fragmento, gerar embedding e salvar. Custo zero (local). Adicionar ao tempo estimado do batch." },
+            { id: "m7a5", text: "Busca por similaridade semântica", note: "SELECT texto, 1-(embedding <=> $1) AS score FROM fragmentos ORDER BY score DESC LIMIT 10 — sintaxe pgvector." },
           ]
         },
         {
@@ -240,9 +360,9 @@ const data = {
         {
           title: "Query Engine Básico",
           items: [
-            { id: "m7c1", text: "Implementar pipeline de consulta combinada", note: "Para cada pergunta: 1) extrair entidades 2) buscar por entidade 3) buscar por embedding 4) unir resultados 5) ranquear por score+data." },
-            { id: "m7c2", text: "Montar contexto estruturado para LLM responder", note: "Não enviar todos os fragmentos crus. Montar um contexto formatado: [DATA] [TÓPICO] texto do fragmento. Top 10-15 fragmentos por consulta." },
-            { id: "m7c3", text: "Implementar endpoint de pergunta em linguagem natural", note: "POST /ask com body {pergunta: 'O que eu falei sobre o projeto X?'} — passa pelo pipeline completo e retorna resposta gerada pela LLM." },
+            { id: "m7c1", text: "Pipeline de consulta combinada", note: "Para cada pergunta: 1) extrair entidades 2) buscar por entidade 3) buscar por embedding 4) unir resultados 5) ranquear por score+data." },
+            { id: "m7c2", text: "Montar contexto estruturado para LLM responder", note: "Não enviar todos os fragmentos crus. Formatar: [DATA] [TÓPICO] texto. Top 10-15 fragmentos por consulta." },
+            { id: "m7c3", text: "Endpoint de pergunta em linguagem natural (POST /ask)", note: "Body: {pergunta: 'O que eu falei sobre o projeto X?'} — passa pelo pipeline completo e retorna resposta gerada pela LLM." },
           ]
         }
       ]
@@ -258,10 +378,10 @@ const data = {
           items: [
             { id: "m0a1", text: "Criar tabela 'perfis'", note: "Campos: id, usuario_id, nome, profissao, empresa, contexto_geral, idioma_principal." },
             { id: "m0a2", text: "Criar tabela 'categorias'", note: "Campos: id, nome, descricao, cor, icone, categoria_pai_id (self-ref), usuario_id." },
-            { id: "m0a3", text: "Popular categorias raiz do seu contexto", note: "Definir suas categorias principais ANTES de começar a usar. Ex: Trabalho, Pessoal, Projetos, Ideias, Saúde. Isso guia toda a categorização." },
+            { id: "m0a3", text: "Popular categorias raiz do seu contexto", note: "Definir suas categorias ANTES de usar. Ex: Trabalho, Pessoal, Projetos, Ideias, Saúde. Isso guia toda a categorização." },
             { id: "m0a4", text: "Criar tabela 'regras_categorizacao'", note: "Campos: id, tipo (keyword/pessoa/negativa), valor, categoria_id, usuario_id." },
-            { id: "m0a5", text: "Definir regras iniciais de categorização", note: "Associar pessoas conhecidas às categorias corretas. Ex: nomes de clientes → Trabalho > Clientes. Isso treina a LLM para o seu contexto específico." },
-            { id: "m0a6", text: "Integrar perfil no prompt do batch (Módulo 4)", note: "O prompt deve carregar dinamicamente as categorias e regras do banco antes de processar. Não hardcodar no prompt." },
+            { id: "m0a5", text: "Definir regras iniciais de categorização", note: "Associar pessoas conhecidas às categorias corretas. Ex: nomes de clientes → Trabalho > Clientes." },
+            { id: "m0a6", text: "Integrar perfil no prompt do batch (Módulo 4)", note: "O prompt deve carregar dinamicamente as categorias e regras do banco. Não hardcodar no prompt." },
           ]
         }
       ]
@@ -275,26 +395,26 @@ const data = {
         {
           title: "Script Principal",
           items: [
-            { id: "s1", text: "Criar script main.py que inicia o sistema completo", note: "Deve subir: thread de captura, thread do VAD, thread de transcrição+fila, conexão com banco. Graceful shutdown com Ctrl+C." },
-            { id: "s2", text: "Implementar startup automático com o PC", note: "Linux: systemd service ou @reboot no crontab | Windows: Task Scheduler com trigger 'logon' | Mac: launchd plist." },
-            { id: "s3", text: "Implementar indicador visual de status", note: "Pode ser simples: print no terminal com ícone. 🔴 Dormindo | 🟢 Gravando | 🔵 Transcrevendo. Ajuda a saber se o sistema está funcionando." },
+            { id: "s1", text: "main.py orquestra todas as threads", note: "Sobe: StorageWorker, TranscriptionWorker, MicrophoneSource (se disponível), Flask (Alexa + webhooks). Graceful shutdown com SIGINT/SIGTERM." },
+            { id: "s2", text: "Startup automático com o sistema (systemd / Task Scheduler)", note: "Docker: docker-compose up -d já persiste entre reboots se restart: unless-stopped. Pendente: configurar Docker para iniciar com o sistema." },
+            { id: "s3", text: "Indicador visual de status nos logs", note: "Logs com ícones: ✅ iniciando | 🎤 capturando | ✍️ transcrevendo | 💾 salvando | ❌ erro. Implementado via utils/logger.py." },
           ]
         },
         {
           title: "Testes & Validação",
           items: [
-            { id: "s4", text: "Teste de ponta a ponta: falar → ver no banco", note: "Falar uma frase clara, esperar processamento, verificar no banco se chegou. Se isso funciona, o pipeline core está OK." },
-            { id: "s5", text: "Teste de robustez: deixar rodar 2h seguidas", note: "Verificar: memória crescendo? Filas travando? Banco com conexões abertas demais? Erros silenciosos?" },
-            { id: "s6", text: "Teste de qualidade de transcrição no seu ambiente", note: "Falar 10 frases diferentes e comparar com o texto gerado. Se precisão < 80%, investigar: qualidade do microfone, ruído ambiente, distância do microfone." },
-            { id: "s7", text: "Teste do batch de processamento com dados reais", note: "Após 1 dia de uso, rodar o batch e verificar: entidades corretas? Tópicos fazem sentido? Importance scores razoáveis?" },
+            { id: "s4", text: "Teste ponta a ponta confirmado: falar → ver no banco", note: "Testado e funcionando. Pipeline completo validado: windows_mic_sender → POST → backend → PostgreSQL. Verificar com make db-debug." },
+            { id: "s5", text: "Teste de robustez: rodar 2h seguidas", note: "Pendente: verificar memória crescendo, filas travando, conexões de banco abertas demais, erros silenciosos." },
+            { id: "s6", text: "Teste de qualidade de transcrição no ambiente real", note: "Pendente: falar 10 frases e comparar com texto gerado. Precisão < 80% → investigar microfone, ruído, distância." },
+            { id: "s7", text: "Teste do batch com dados reais (Módulo 4)", note: "Pendente: após 1 dia de uso, rodar batch e verificar entidades, tópicos, importance scores." },
           ]
         },
         {
           title: "Segurança & Privacidade",
           items: [
-            { id: "s8", text: "Confirmar que nenhum áudio sai do PC", note: "Só texto transcrito vai para a OpenAI. Verificar código: nenhum arquivo .wav ou buffer de áudio está sendo enviado para fora." },
-            { id: "s9", text: "Implementar rotina de backup do banco", note: "pg_dump jarvis_db > backup_$(date +%Y%m%d).sql — agendar weekly. Meses de dados perdidos por falha de HD é devastador." },
-            { id: "s10", text: "Configurar permissões de arquivo do banco e .env", note: "chmod 600 .env | Dados pessoais sensíveis não devem ser legíveis por outros usuários do sistema." },
+            { id: "s8", text: "Nenhum áudio sai do computador", note: "Confirmado: apenas texto transcrito trafega. windows_mic_sender transcreve localmente e envia só o texto. Backend recebe só texto." },
+            { id: "s9", text: "Backup do banco configurado (make db-backup)", note: "make db-backup gera backup_YYYYMMDD_HHMMSS.sql via pg_dump. Agendar execução semanal no cron." },
+            { id: "s10", text: "Permissões de arquivo do .env e banco", note: "Pendente: chmod 600 .env. Dados pessoais sensíveis não devem ser legíveis por outros usuários do sistema." },
           ]
         }
       ]
@@ -302,8 +422,8 @@ const data = {
   ]
 };
 
-export default function JarvisChecklist() {
-  const [checked, setChecked] = useState({});
+export default function CerebroChecklist() {
+  const [checked, setChecked] = useState(initialChecked);
   const [expanded, setExpanded] = useState({ ambiente: true });
   const [expandedNotes, setExpandedNotes] = useState({});
   const [filter, setFilter] = useState("all");
@@ -347,7 +467,7 @@ export default function JarvisChecklist() {
                 <span style={{ fontSize: 11, letterSpacing: 4, color: "#00FFB2", textTransform: "uppercase", fontWeight: 700 }}>PROJETO</span>
               </div>
               <h1 style={{ fontSize: 28, fontWeight: 700, margin: 0, letterSpacing: -1, color: "#F8FAFC" }}>
-                JARVIS <span style={{ color: "#00FFB2" }}>_</span> CHECKLIST
+                CEREBRO <span style={{ color: "#00FFB2" }}>_</span> CHECKLIST
               </h1>
               <p style={{ margin: "6px 0 0", fontSize: 12, color: "#64748B", letterSpacing: 1 }}>
                 MVP CORE — SEGUNDO CÉREBRO COM VOZ
@@ -462,7 +582,7 @@ export default function JarvisChecklist() {
                       if (filter === "done") return checked[item.id];
                       return true;
                     })
-                    .map((item, idx) => (
+                    .map((item) => (
                       <div key={item.id} style={{
                         borderLeft: `3px solid ${checked[item.id] ? section.color + "60" : "#1E293B"}`,
                         background: checked[item.id] ? "rgba(15,23,42,0.4)" : "#0D1420",

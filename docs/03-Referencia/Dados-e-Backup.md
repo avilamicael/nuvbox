@@ -11,7 +11,7 @@ aliases:
 
 ## 📁 Localização dos Dados
 
-Os dados do Jarvis são salvos em **`./data/postgres/`** (raiz do projeto):
+Os dados do Cerebro são salvos em **`./data/postgres/`** (raiz do projeto):
 
 ```
 nuvbox/
@@ -42,8 +42,8 @@ nuvbox/
 ### Banco de Dados: PostgreSQL
 
 ```sql
-Database: jarvis_db
-User: jarvis
+Database: cerebro_db
+User: cerebro
 Host: postgres (dentro de Docker)
 Port: 5432
 
@@ -75,12 +75,12 @@ idx_transcricoes_sessao_id  → Buscar por sessão Alexa
 
 ```bash
 # Conectar ao banco
-docker exec jarvis-postgres psql -U jarvis -d jarvis_db
+docker exec cerebro-postgres psql -U cerebro -d cerebro_db
 
 # Dentro do psql:
-jarvis_db=# SELECT COUNT(*) FROM transcricoes;
-jarvis_db=# SELECT id, fonte, texto, criado_em FROM transcricoes ORDER BY id DESC LIMIT 10;
-jarvis_db=# SELECT * FROM transcricoes WHERE fonte='alexa';
+cerebro_db=# SELECT COUNT(*) FROM transcricoes;
+cerebro_db=# SELECT id, fonte, texto, criado_em FROM transcricoes ORDER BY id DESC LIMIT 10;
+cerebro_db=# SELECT * FROM transcricoes WHERE fonte='alexa';
 ```
 
 ### Opção 2: Via Python
@@ -89,8 +89,8 @@ jarvis_db=# SELECT * FROM transcricoes WHERE fonte='alexa';
 import psycopg2
 
 conn = psycopg2.connect(
-    dbname="jarvis_db",
-    user="jarvis",
+    dbname="cerebro_db",
+    user="cerebro",
     password="sua_senha",
     host="localhost",
     port=5432
@@ -108,15 +108,15 @@ conn.close()
 
 ```bash
 # Listar todas as transcrições
-docker exec jarvis-postgres psql -U jarvis -d jarvis_db \
+docker exec cerebro-postgres psql -U cerebro -d cerebro_db \
   -c "SELECT id, fonte, LEFT(texto, 80) as preview FROM transcricoes ORDER BY id DESC;"
 
 # Contar por fonte
-docker exec jarvis-postgres psql -U jarvis -d jarvis_db \
+docker exec cerebro-postgres psql -U cerebro -d cerebro_db \
   -c "SELECT fonte, COUNT(*) as total FROM transcricoes GROUP BY fonte;"
 
 # Exportar para CSV
-docker exec jarvis-postgres psql -U jarvis -d jarvis_db \
+docker exec cerebro-postgres psql -U cerebro -d cerebro_db \
   -c "COPY (SELECT * FROM transcricoes ORDER BY id DESC) TO STDOUT WITH CSV HEADER;" > transcricoes.csv
 ```
 
@@ -128,20 +128,20 @@ docker exec jarvis-postgres psql -U jarvis -d jarvis_db \
 
 ```bash
 # Backup completo do PostgreSQL
-docker exec jarvis-postgres pg_dump -U jarvis -d jarvis_db > backup_$(date +%Y%m%d_%H%M%S).sql
+docker exec cerebro-postgres pg_dump -U cerebro -d cerebro_db > backup_$(date +%Y%m%d_%H%M%S).sql
 
 # Restaurar de um backup
-docker exec -i jarvis-postgres psql -U jarvis -d jarvis_db < backup_20260317_165000.sql
+docker exec -i cerebro-postgres psql -U cerebro -d cerebro_db < backup_20260317_165000.sql
 ```
 
 ### Backup da Pasta data/
 
 ```bash
 # Backup da pasta inteira (para migração)
-tar -czf jarvis_dados_backup_$(date +%Y%m%d).tar.gz ./data/postgres/
+tar -czf cerebro_dados_backup_$(date +%Y%m%d).tar.gz ./data/postgres/
 
 # Restaurar
-tar -xzf jarvis_dados_backup_20260317.tar.gz
+tar -xzf cerebro_dados_backup_20260317.tar.gz
 ```
 
 ### Backup Automático (Cron)
@@ -150,7 +150,7 @@ Adicione ao `crontab`:
 
 ```bash
 # Daily backup at 2 AM
-0 2 * * * cd /home/micael/nuvbox && docker exec jarvis-postgres pg_dump -U jarvis -d jarvis_db > backups/backup_$(date +\%Y\%m\%d).sql
+0 2 * * * cd /home/micael/nuvbox && docker exec cerebro-postgres pg_dump -U cerebro -d cerebro_db > backups/backup_$(date +\%Y\%m\%d).sql
 ```
 
 ---
@@ -163,10 +163,10 @@ Adicione ao `crontab`:
 cd /home/micael/nuvbox
 
 # Backup do banco
-docker exec jarvis-postgres pg_dump -U jarvis -d jarvis_db > backup_vps.sql
+docker exec cerebro-postgres pg_dump -U cerebro -d cerebro_db > backup_vps.sql
 
 # Backup da pasta data (alternativa)
-tar -czf jarvis_data.tar.gz ./data/postgres/
+tar -czf cerebro_data.tar.gz ./data/postgres/
 ```
 
 ### Passo 2: Enviar para VPS
@@ -174,7 +174,7 @@ tar -czf jarvis_data.tar.gz ./data/postgres/
 ```bash
 # Via SCP
 scp backup_vps.sql user@seu-vps.com:/home/user/nuvbox/
-scp jarvis_data.tar.gz user@seu-vps.com:/home/user/nuvbox/
+scp cerebro_data.tar.gz user@seu-vps.com:/home/user/nuvbox/
 
 # Ou via SFTP/rsync
 rsync -avz ./data/postgres/ user@seu-vps.com:/home/user/nuvbox/data/postgres/
@@ -184,10 +184,10 @@ rsync -avz ./data/postgres/ user@seu-vps.com:/home/user/nuvbox/data/postgres/
 
 ```bash
 # Via SQL dump
-docker exec -i jarvis-postgres psql -U jarvis -d jarvis_db < backup_vps.sql
+docker exec -i cerebro-postgres psql -U cerebro -d cerebro_db < backup_vps.sql
 
 # Ou via pasta completa
-tar -xzf jarvis_data.tar.gz
+tar -xzf cerebro_data.tar.gz
 docker-compose down
 docker-compose up -d
 ```
@@ -200,25 +200,25 @@ docker-compose up -d
 
 ```bash
 # Tamanho total
-docker exec jarvis-postgres psql -U jarvis -d jarvis_db \
-  -c "SELECT pg_size_pretty(pg_database_size('jarvis_db')) as tamanho;"
+docker exec cerebro-postgres psql -U cerebro -d cerebro_db \
+  -c "SELECT pg_size_pretty(pg_database_size('cerebro_db')) as tamanho;"
 
 # Por tabela
-docker exec jarvis-postgres psql -U jarvis -d jarvis_db \
+docker exec cerebro-postgres psql -U cerebro -d cerebro_db \
   -c "SELECT schemaname, tablename, pg_size_pretty(pg_total_relation_size(schemaname||'.'||tablename)) as tamanho FROM pg_tables ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC;"
 ```
 
 ### Número de Registros
 
 ```bash
-docker exec jarvis-postgres psql -U jarvis -d jarvis_db \
+docker exec cerebro-postgres psql -U cerebro -d cerebro_db \
   -c "SELECT fonte, COUNT(*) as quantidade FROM transcricoes GROUP BY fonte ORDER BY quantidade DESC;"
 ```
 
 ### Últimas Transcrições
 
 ```bash
-docker exec jarvis-postgres psql -U jarvis -d jarvis_db \
+docker exec cerebro-postgres psql -U cerebro -d cerebro_db \
   -c "SELECT id, fonte, criado_em, LEFT(texto, 100) as texto FROM transcricoes ORDER BY id DESC LIMIT 10;"
 ```
 
@@ -230,9 +230,9 @@ docker exec jarvis-postgres psql -U jarvis -d jarvis_db \
 # .env ou docker-compose.yml
 DB_HOST=postgres          # (docker) ou localhost (local)
 DB_PORT=5432
-DB_USER=jarvis
+DB_USER=cerebro
 DB_PASSWORD=sua_senha
-DB_NAME=jarvis_db
+DB_NAME=cerebro_db
 ```
 
 Para desenvolvimento **fora do Docker**:

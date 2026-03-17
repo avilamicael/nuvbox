@@ -9,7 +9,7 @@ aliases:
 
 # 🪟 Setup: Windows Mic Sender
 
-Script que roda no **Windows nativo** (fora do WSL2/Docker), captura o microfone, transcreve com Whisper e envia para o backend Jarvis.
+Script que roda no **Windows nativo** (fora do WSL2/Docker), captura o microfone, transcreve com Whisper e envia para o backend Cerebro.
 
 ---
 

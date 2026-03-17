@@ -15,10 +15,10 @@ items: [
 incompatibilidade com Whisper e silero-vad.” },
 { id: “a2”, text: “Instalar Python 3.10+ se necessário”, note: “Recomendado: usar pyenv para gerenciar versões sem
 conflito com o sistema.” },
-{ id: “a3”, text: “Criar ambiente virtual dedicado ao projeto”, note: “Use: python -m venv jarvis-env | Evita conflito
+{ id: “a3”, text: “Criar ambiente virtual dedicado ao projeto”, note: “Use: python -m venv cerebro-env | Evita conflito
 de dependências com outros projetos.” },
-{ id: “a4”, text: “Ativar o ambiente virtual”, note: “Linux/Mac: source jarvis-env/bin/activate | Windows:
-jarvis-env\Scripts\activate” },
+{ id: “a4”, text: “Ativar o ambiente virtual”, note: “Linux/Mac: source cerebro-env/bin/activate | Windows:
+cerebro-env\Scripts\activate” },
 { id: “a5”, text: “Verificar pip atualizado dentro do venv”, note: “pip install –upgrade pip” },
 ]
 },
@@ -62,10 +62,10 @@ items: [
 brew install postgresql | Windows: installer oficial em postgresql.org.” },
 { id: “d2”, text: “Iniciar serviço do PostgreSQL”, note: “Linux: sudo systemctl start postgresql | Mac: brew services
 start postgresql” },
-{ id: “d3”, text: “Criar banco de dados para o projeto”, note: “createdb jarvis_db ou via psql: CREATE DATABASE
-jarvis_db;” },
+{ id: “d3”, text: “Criar banco de dados para o projeto”, note: “createdb cerebro_db ou via psql: CREATE DATABASE
+cerebro_db;” },
 { id: “d4”, text: “Criar usuário dedicado ao projeto”, note: “Não usar o usuário postgres padrão em desenvolvimento.
-CREATE USER jarvis_user WITH PASSWORD ‘senha’; GRANT ALL ON DATABASE jarvis_db TO jarvis_user;” },
+CREATE USER cerebro_user WITH PASSWORD ‘senha’; GRANT ALL ON DATABASE cerebro_db TO cerebro_user;” },
 { id: “d5”, text: “Testar conexão com psycopg2”, note: “Escrever um script simples de 5 linhas que conecta e imprime a
 versão do banco. Se falhar aqui, não adianta avançar.” },
 ]
@@ -87,10 +87,10 @@ funciona e tem crédito.” },
 {
 title: “Estrutura de Pastas”,
 items: [
-{ id: “f1”, text: “Criar estrutura de diretórios do projeto”, note: “Sugestão: /jarvis | /modules (input, transcricao,
+{ id: “f1”, text: “Criar estrutura de diretórios do projeto”, note: “Sugestão: /cerebro | /modules (input, transcricao,
 storage, ia, consulta) | /config | /scripts | /tests | /logs” },
 { id: “f2”, text: “Inicializar repositório git”, note: “git init + criar .gitignore com: .env, **pycache**, *.pyc,
-jarvis-env/, logs/*.log” },
+cerebro-env/, logs/*.log” },
 { id: “f3”, text: “Criar arquivo de configuração central”, note: “config/settings.py ou config.yaml centralizando:
 paths, thresholds do VAD, modelo do Whisper, schedule do batch.” },
 ]
@@ -390,7 +390,7 @@ e salvar. Adicionar ao custo estimado do batch (é local, sem custo de API).” 
     verificar: entidades corretas? Tópicos fazem sentido? Importance scores razoáveis?” }, ] }, { title: “Segurança &
     Privacidade”, items: [ { id: “s8”, text: “Confirmar que nenhum áudio sai do PC”, note: “Só texto transcrito vai para
     a OpenAI. Verificar código: nenhum arquivo .wav ou buffer de áudio está sendo enviado para fora.” }, { id: “s9”,
-    text: “Implementar rotina de backup do banco”, note: “pg_dump jarvis_db> backup_$(date +%Y%m%d).sql — agendar
+    text: “Implementar rotina de backup do banco”, note: “pg_dump cerebro_db> backup_$(date +%Y%m%d).sql — agendar
     weekly. Meses de dados perdidos por falha de HD é devastador.” },
     { id: “s10”, text: “Configurar permissões de arquivo do banco e .env”, note: “chmod 600 .env | Dados pessoais
     sensíveis não devem ser legíveis por outros usuários do sistema.” },
@@ -401,7 +401,7 @@ e salvar. Adicionar ao custo estimado do batch (é local, sem custo de API).” 
     ]
     };
 
-    export default function JarvisChecklist() {
+    export default function CerebroChecklist() {
     const [checked, setChecked] = useState({});
     const [expanded, setExpanded] = useState({ ambiente: true });
     const [expandedNotes, setExpandedNotes] = useState({});
@@ -437,7 +437,7 @@ e salvar. Adicionar ao custo estimado do batch (é local, sem custo de API).” 
                   700 }}>PROJETO</span>
               </div>
               <h1 style={{ fontSize: 28, fontWeight: 700, margin: 0, letterSpacing: -1, color: “#F8FAFC” }}>
-                JARVIS <span style={{ color: “#00FFB2” }}>_</span> CHECKLIST
+                CEREBRO <span style={{ color: “#00FFB2” }}>_</span> CHECKLIST
               </h1>
               <p style={{ margin: “6px 0 0”, fontSize: 12, color: “#64748B”, letterSpacing: 1 }}>
                 MVP CORE — SEGUNDO CÉREBRO COM VOZ

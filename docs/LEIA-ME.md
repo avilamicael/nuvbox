@@ -1,6 +1,6 @@
-# 📚 Documentação Jarvis Backend - Formato Obsidian
+# 📚 Documentação Cerebro Backend - Formato Obsidian
 
-Bem-vindo à documentação completa do **Jarvis Backend** em formato Obsidian.
+Bem-vindo à documentação completa do **Cerebro Backend** em formato Obsidian.
 
 ## 🎯 Comece Por Aqui
 

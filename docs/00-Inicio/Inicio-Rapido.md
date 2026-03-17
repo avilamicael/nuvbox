@@ -58,7 +58,7 @@ docker-compose logs backend
 
 Procure por:
 ```
-✅ JARVIS BACKEND RODANDO
+✅ CEREBRO BACKEND RODANDO
 🎤 Microfone: escutando fala
 📊 Banco de dados: armazenando transcrições
 ```
@@ -75,7 +75,7 @@ make webhook-test
 # Ou:
 curl -s -X POST http://localhost:5001/webhook/text \
   -H "Content-Type: application/json" \
-  -H "X-Jarvis-Secret: mude_antes_do_ngrok" \
+  -H "X-Cerebro-Secret: mude_antes_do_ngrok" \
   -d '{"text":"teste","source":"manual","timestamp":"2026-01-01T00:00:00Z"}'
 ```
 
@@ -178,4 +178,4 @@ Seus próximos passos:
 
 ---
 
-#rapido #setup #guia #instalacao #jarvis
+#rapido #setup #guia #instalacao #cerebro

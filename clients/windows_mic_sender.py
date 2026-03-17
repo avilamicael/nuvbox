@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Jarvis - Windows Microphone Sender
+Cerebro - Windows Microphone Sender
 ===================================
 Captura microfone no Windows, transcreve com Whisper local e envia para o backend.
 
@@ -129,7 +129,7 @@ class BackendSender:
         }
         headers = {
             "Content-Type": "application/json",
-            "X-Jarvis-Secret": self.secret,
+            "X-Cerebro-Secret": self.secret,
         }
         try:
             resp = requests.post(self.url, json=payload, headers=headers, timeout=10)
@@ -245,7 +245,7 @@ def list_devices():
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Jarvis Windows Mic Sender — lê configurações do .env")
+    parser = argparse.ArgumentParser(description="Cerebro Windows Mic Sender — lê configurações do .env")
     parser.add_argument("--list-devices", action="store_true", help="Listar dispositivos de áudio e sair")
     args = parser.parse_args()
 
@@ -254,7 +254,7 @@ def main():
         return
 
     print("=" * 60)
-    print("🎙️  JARVIS — Windows Mic Sender")
+    print("🎙️  CEREBRO — Windows Mic Sender")
     print("=" * 60)
     print(f"  Backend:   {CFG['backend_url']}")
     print(f"  Source ID: {CFG['source_id']}")

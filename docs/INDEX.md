@@ -1,13 +1,13 @@
 ---
-title: Documentação Jarvis Backend v1.0
-tags: [documentacao, indice, jarvis, backend]
+title: Documentação Cerebro Backend v1.0
+tags: [documentacao, indice, cerebro, backend]
 created: 2026-03-17
 updated: 2026-03-17
 ---
 
-# 📚 Documentação Jarvis Backend v1.0
+# 📚 Documentação Cerebro Backend v1.0
 
-Bem-vindo à documentação do **Jarvis Backend** - um sistema de transcrição de voz pronto para produção com Docker.
+Bem-vindo à documentação do **Cerebro Backend** - um sistema de transcrição de voz pronto para produção com Docker.
 
 > **🚀 Novo?** Comece por [[00-Comece-Aqui|Comece Aqui]] ou [[Inicio-Rapido|Início Rápido]]
 
@@ -25,6 +25,7 @@ Documentação técnica completa e aprofundada.
 - [[Arquitetura-Geral|Arquitetura Geral]] - Visão geral do sistema e threading model
 - [[Modulo1-Input|Módulo 1 - Input]] - Fontes de entrada modulares (mic, Alexa, ESP32, colar...)
 - [[Deployment-Docker-vs-Local|Docker vs Local vs VPS]] - Quando usar cada opção de deployment
+- [[Arquitetura-Backend-e-Clientes|Backend e Clientes]] - Papel do backend, banco externo, app desktop futuro
 
 ### 🚀 [[02-Implantacao/README|Implantação]]
 Guias para implantar em ambiente de produção e clientes.
@@ -99,7 +100,7 @@ docker-compose up -d     # Iniciar
 
 ## 🏷️ Tags Principais
 
-- `#jarvis` - Sistema Jarvis
+- `#cerebro` - Sistema Cerebro
 - `#backend` - Código backend
 - `#docker` - Containerização
 - `#configuracao` - Variáveis e setup
@@ -156,4 +157,4 @@ docker-compose up -d     # Iniciar
 ---
 
 **Última atualização**: 17 de março de 2026
-**Manutentor**: Equipe Jarvis
+**Manutentor**: Equipe Cerebro

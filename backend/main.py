@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Jarvis Backend - Orquestração Principal
+Cerebro Backend - Orquestração Principal
 
 Sequência de inicialização:
 1. Inicializar logging e handlers de sinal
@@ -30,7 +30,7 @@ logger = setup_logger(__name__)
 def main():
     """Main entry point."""
     logger.info("=" * 80)
-    logger.info("🎙️  JARVIS BACKEND - Starting")
+    logger.info("🎙️  CEREBRO BACKEND - Starting")
     logger.info("=" * 80)
 
     try:
@@ -89,7 +89,7 @@ def main():
         logger.info(f"✅ Flask listening on {settings.flask.host}:{settings.flask.port}")
 
         logger.info("=" * 80)
-        logger.info("✅ JARVIS BACKEND IS RUNNING")
+        logger.info("✅ CEREBRO BACKEND IS RUNNING")
         logger.info("=" * 80)
         logger.info("  🎤 Microphone: listening for speech")
         logger.info(
@@ -137,7 +137,7 @@ def main():
         logger.info("Closing database connection pool...")
         close_pool()
 
-        logger.info("✅ JARVIS BACKEND STOPPED GRACEFULLY")
+        logger.info("✅ CEREBRO BACKEND STOPPED GRACEFULLY")
         logger.info("=" * 80)
         return 0
 

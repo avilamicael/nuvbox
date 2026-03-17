@@ -46,7 +46,7 @@ if [ "$HTTP_CODE" == "200" ]; then
     # Check if stored in DB
     echo ""
     echo "Checking if stored in database..."
-    COUNT=$(docker-compose exec -T postgres psql -U jarvis -d jarvis_db -t -c \
+    COUNT=$(docker-compose exec -T postgres psql -U cerebro -d cerebro_db -t -c \
         "SELECT COUNT(*) FROM transcricoes WHERE fonte = 'alexa' AND texto LIKE '%teste de integração%';" 2>/dev/null || echo "0")
 
     if [ "$COUNT" -gt "0" ]; then

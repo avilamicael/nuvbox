@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**JARVIS Checklist** is a React + Vite web application that tracks the development and implementation of the **Projeto Jarvis** — a voice-controlled personal assistant system (second brain) that:
+**CEREBRO Checklist** is a React + Vite web application that tracks the development and implementation of the **Projeto Cerebro** — a voice-controlled personal assistant system (second brain) that:
 
 - Captures everything you say via a passive microphone (always on)
 - Transcribes automatically using local Whisper (privacy-first)
@@ -59,10 +59,10 @@ The entire application is contained in `App.jsx` as one stateful React component
 - No complex navigation or routing needed
 - All data is hardcoded in the `data` object (not fetched from a backend)
 
-### Data Structure — Mapping to Projeto Jarvis
-The app uses a hierarchical checklist structure organized by **Jarvis modules and implementation phases**:
+### Data Structure — Mapping to Projeto Cerebro
+The app uses a hierarchical checklist structure organized by **Cerebro modules and implementation phases**:
 
-- **sections** (8 total): Jarvis modules + system ops
+- **sections** (8 total): Cerebro modules + system ops
   - **Módulo 0** — User Profile & Context (categorization rules)
   - **Módulo 1** — Input (audio capture, VAD, activation context)
   - **Módulo 2** — Transcription (Whisper local + diarization future)
@@ -87,7 +87,7 @@ The app uses a hierarchical checklist structure organized by **Jarvis modules an
 All styles are defined as inline JavaScript objects passed to `style` props. No CSS Modules or CSS-in-JS libraries. Global styles in `index.css` and component-specific styles in `App.css`.
 
 ### Connection to Backend
-This checklist is a **progress tracker tool** for implementing the actual Jarvis system:
+This checklist is a **progress tracker tool** for implementing the actual Cerebro system:
 - Each checklist item links to a backend implementation task (Python scripts, database schemas, API integrations)
 - Checking off items represents completed backend work, not just UI updates
 - The checklist drives the roadmap: Phase 1 (MVP Core) → Phase 2 (AI Processing) → Phase 3 (Query) → Phase 4-5 (Scale)
@@ -132,10 +132,10 @@ All data is static. To connect to a real backend, you would need to:
 - The README.md in `/frontend` is a generic Vite template—actual project documentation is embedded in checklist items and the `visao_geral.pdf` in the root
 - Vite uses Oxc parser by default (fast JSX parsing); React Compiler is not enabled
 - HMR (Hot Module Replacement) is active in dev mode—changes save and refresh automatically
-- **Data source**: All checklist content in `App.jsx` is the source of truth for Jarvis implementation tasks (hardcoded data structure—could be extracted to JSON later)
-- **Purpose**: This is a MVP-phase documentation + progress tracker; as Jarvis backend scales to production, consider migrating to a proper task/project management tool if needed
+- **Data source**: All checklist content in `App.jsx` is the source of truth for Cerebro implementation tasks (hardcoded data structure—could be extracted to JSON later)
+- **Purpose**: This is a MVP-phase documentation + progress tracker; as Cerebro backend scales to production, consider migrating to a proper task/project management tool if needed
 
-## Jarvis Backend Stack (Reference)
+## Cerebro Backend Stack (Reference)
 
 This checklist tracks implementation of a Python-based system. Key technologies:
 
@@ -146,7 +146,7 @@ This checklist tracks implementation of a Python-based system. Key technologies:
 - **LLM Processing**: OpenAI API (GPT-4o mini, batch processing daily)
 - **Future Components**: pyannote.audio (diarization), Ollama + LLaMA/Mistral (local LLM), pgvector (semantic search), sentence-transformers (embeddings)
 
-The frontend checklist ensures all modules are properly tracked during development. See `visao_geral.pdf` for full architecture details.
+The frontend checklist ensures all modules are properly tracked during development. See `visao_geral.pdf` for full Cerebro architecture details.
 
 ## Building for Production
 

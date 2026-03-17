@@ -166,8 +166,8 @@ docker-compose logs backend | tail -20
 
 ### Verificar Banco de Dados
 ```bash
-# Conectar como jarvis
-docker-compose exec postgres psql -U jarvis -d jarvis_db
+# Conectar como cerebro
+docker-compose exec postgres psql -U cerebro -d cerebro_db
 
 # Ver número de transcrições
 SELECT COUNT(*) FROM transcricoes;
@@ -213,13 +213,13 @@ docker-compose run --rm backend python -m py_compile backend/*.py backend/**/*.p
 ### Remover Dados Específicos
 ```bash
 # Deletar transcrições antigas (30+ dias)
-docker-compose exec postgres psql -U jarvis -d jarvis_db << EOF
+docker-compose exec postgres psql -U cerebro -d cerebro_db << EOF
 DELETE FROM transcricoes WHERE criado_em < NOW() - INTERVAL '30 days';
 VACUUM transcricoes;
 EOF
 
 # Resetar banco inteiro (⚠️)
-docker-compose exec postgres psql -U jarvis -d jarvis_db -c "TRUNCATE transcricoes;"
+docker-compose exec postgres psql -U cerebro -d cerebro_db -c "TRUNCATE transcricoes;"
 ```
 
 ### Limpeza do Docker

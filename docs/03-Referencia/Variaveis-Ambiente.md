@@ -18,22 +18,39 @@ nano .env
 
 ## 🗄️ Banco de Dados
 
+### `DB_HOST`
+- **Tipo**: string
+- **Padrão**: `postgres` (container Docker local)
+- **Descrição**: Host do PostgreSQL
+- **Opções**:
+  - `postgres` → PostgreSQL rodando via Docker local (padrão)
+  - `localhost` → PostgreSQL instalado diretamente na máquina
+  - `db.xxxx.supabase.co` → Supabase (banco externo na nuvem)
+  - `192.168.1.50` ou IP de VPS → PostgreSQL em outra máquina
+- **Para usar Supabase**: Defina `DB_HOST=db.xxxx.supabase.co`, `DB_USER`, `DB_PASSWORD`, `DB_NAME` conforme credenciais do projeto Supabase. Remova (ou não suba) o container `postgres` do docker-compose.
+
+### `DB_PORT`
+- **Tipo**: número
+- **Padrão**: `5432`
+- **Descrição**: Porta do PostgreSQL
+- **Quando mudar**: Se usar Supabase transaction pooler (porta 6543) ou porta customizada
+
 ### `DB_USER`
 - **Tipo**: string
-- **Padrão**: `jarvis`
+- **Padrão**: `cerebro`
 - **Descrição**: Usuário PostgreSQL
 - **Produção**: Pode manter ou mudar
 
 ### `DB_PASSWORD`
 - **Tipo**: string
-- **Padrão**: `jarvis_secure_password`
+- **Padrão**: `cerebro_secure_password`
 - **Descrição**: Senha PostgreSQL
 - **⚠️ Segurança**: MUDE EM PRODUÇÃO!
 - **Exemplo**: `sua_senha_forte_aqui`
 
 ### `DB_NAME`
 - **Tipo**: string
-- **Padrão**: `jarvis_db`
+- **Padrão**: `cerebro_db`
 - **Descrição**: Nome do banco de dados
 - **Produção**: Pode manter
 
@@ -112,7 +129,7 @@ O script lê estas variáveis automaticamente do `.env` — não é necessário 
 ### `BACKEND_URL`
 - **Tipo**: URL
 - **Padrão**: `http://localhost:5001`
-- **Descrição**: URL do backend Jarvis para onde o microfone envia os dados
+- **Descrição**: URL do backend Cerebro para onde o microfone envia os dados
 - **Quando mudar**:
   - `http://localhost:5001` → Backend rodando no WSL2 da mesma máquina
   - `http://192.168.1.100:5001` → Backend em máquina local na rede
@@ -195,9 +212,11 @@ O script lê estas variáveis automaticamente do `.env` — não é necessário 
 
 ```env
 # Banco de dados
-DB_USER=jarvis
+DB_HOST=postgres                   # postgres (Docker) | supabase host | IP externo
+DB_PORT=5432
+DB_USER=cerebro
 DB_PASSWORD=minha_senha_forte_123!
-DB_NAME=jarvis_db
+DB_NAME=cerebro_db
 
 # Microfone
 MIC_DEVICE_ID=0

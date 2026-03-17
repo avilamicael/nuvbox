@@ -4,7 +4,7 @@ tags: [arquitetura, design, sistema, overview]
 aliases: [Visão Geral, Arquitetura]
 ---
 
-# 🏗️ Arquitetura Geral do Jarvis Backend
+# 🏗️ Arquitetura Geral do Cerebro Backend
 
 Visão completa de como o sistema funciona e seus componentes principais.
 
@@ -14,7 +14,7 @@ O sistema possui **3 módulos principais** + **base comum**:
 
 ```
 ┌─────────────────────────────────────────────────┐
-│         Jarvis Backend v1.0                     │
+│         Cerebro Backend v1.0                     │
 ├─────────────────────────────────────────────────┤
 │                                                 │
 │  Módulo 1: Captura de Áudio                    │

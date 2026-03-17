@@ -20,7 +20,7 @@ Cliente precisa ter:
 
 Empacote:
 ```
-projeto-jarvis/
+projeto-cerebro/
 ├── docker-compose.yml
 ├── .env.example
 ├── backend/
@@ -40,12 +40,12 @@ projeto-jarvis/
 ### Passo 1: Extrair/Clonar
 ```bash
 # Zip
-unzip projeto-jarvis.zip
-cd projeto-jarvis
+unzip projeto-cerebro.zip
+cd projeto-cerebro
 
 # Ou: Git
 git clone https://seu-repo.git
-cd projeto-jarvis
+cd projeto-cerebro
 ```
 
 ### Passo 2: Instalar Docker
@@ -116,7 +116,7 @@ docker-compose logs -f backend | head -20
 
 Procure por:
 ```
-✅ JARVIS BACKEND RODANDO
+✅ CEREBRO BACKEND RODANDO
 🎤 Microfone: escutando fala
 📊 Banco de dados: armazenando transcrições
 ```
@@ -156,7 +156,7 @@ docker-compose down
 
 ### Ver Transcrições
 ```bash
-docker-compose exec postgres psql -U jarvis -d jarvis_db \
+docker-compose exec postgres psql -U cerebro -d cerebro_db \
   -c "SELECT criado_em, fonte, LEFT(texto, 80) FROM transcricoes ORDER BY id DESC LIMIT 10;"
 ```
 
@@ -170,7 +170,7 @@ docker-compose exec postgres psql -U jarvis -d jarvis_db \
 ```bash
 # Backup do banco
 docker-compose exec postgres pg_dump \
-  -U jarvis jarvis_db > backup_$(date +%Y%m%d).sql
+  -U cerebro cerebro_db > backup_$(date +%Y%m%d).sql
 
 # Atualizar imagens
 docker-compose pull
@@ -183,7 +183,7 @@ docker-compose up -d
 find logs/ -name "*.log" -mtime +7 -delete
 
 # Remover transcrições antigas
-docker-compose exec postgres psql -U jarvis -d jarvis_db << EOF
+docker-compose exec postgres psql -U cerebro -d cerebro_db << EOF
 DELETE FROM transcricoes WHERE criado_em < NOW() - INTERVAL '90 days';
 VACUUM transcricoes;
 EOF
@@ -212,7 +212,7 @@ docker-compose restart backend
 docker system df
 
 # Deletar transcrições antigas
-docker-compose exec postgres psql -U jarvis -d jarvis_db \
+docker-compose exec postgres psql -U cerebro -d cerebro_db \
   -c "DELETE FROM transcricoes WHERE criado_em < NOW() - INTERVAL '30 days';"
 
 # Aumentar espaço em disco

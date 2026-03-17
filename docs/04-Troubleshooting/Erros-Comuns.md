@@ -54,7 +54,7 @@ df -h
 docker system df
 
 # Deletar transcrições antigas
-docker-compose exec postgres psql -U jarvis -d jarvis_db << EOF
+docker-compose exec postgres psql -U cerebro -d cerebro_db << EOF
 DELETE FROM transcricoes WHERE criado_em < NOW() - INTERVAL '30 days';
 VACUUM transcricoes;
 EOF

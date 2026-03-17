@@ -1,12 +1,12 @@
 ---
 title: Comece Aqui
-tags: [inicio, guia, primeiro-passo, jarvis]
+tags: [inicio, guia, primeiro-passo, cerebro]
 aliases: [00 Comece Aqui, Bem-vindo]
 ---
 
 # 🎯 Comece Aqui
 
-Você agora tem um **sistema Jarvis backend completo e pronto para produção**.
+Você agora tem um **sistema Cerebro backend completo e pronto para produção**.
 
 ## 📚 O que foi construído
 
@@ -169,4 +169,4 @@ Comece com [[Inicio-Rapido|Início Rápido]].
 
 ---
 
-#inicio #comece-aqui #jarvis #guia
+#inicio #comece-aqui #cerebro #guia

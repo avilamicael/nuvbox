@@ -1,6 +1,6 @@
 ---
 title: Makefile - Comandos Úteis
-description: Referência rápida de comandos do Makefile para gerenciar o Jarvis
+description: Referência rápida de comandos do Makefile para gerenciar o Cerebro
 tags: #makefile #comandos #docker #database
 aliases:
   - Comandos Make
@@ -34,8 +34,8 @@ Inicia PostgreSQL + backend em background. Aguarda 2 segundos e mostra status.
 ```
 ✅ Services starting...
 NAME              IMAGE           STATUS
-jarvis-postgres   postgres:15     Up 2 seconds (healthy)
-jarvis-backend    nuvbox-backend  Up 2 seconds
+cerebro-postgres   postgres:15     Up 2 seconds (healthy)
+cerebro-backend    nuvbox-backend  Up 2 seconds
 ```
 
 ### Parar
@@ -136,7 +136,7 @@ Cria arquivo `backup_YYYYMMDD_HHMMSS.sql` com dump do banco.
 
 ```bash
 # Restaurar de um backup
-docker-compose exec -i postgres psql -U jarvis -d jarvis_db < backup_20260317_165900.sql
+docker-compose exec -i postgres psql -U cerebro -d cerebro_db < backup_20260317_165900.sql
 ```
 
 ---

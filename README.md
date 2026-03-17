@@ -1,4 +1,4 @@
-# 🎙️ Jarvis Backend v1.0
+# 🎙️ Cerebro Backend v1.0
 
 **Sistema completo de transcrição de voz** com Docker, Whisper e PostgreSQL.
 

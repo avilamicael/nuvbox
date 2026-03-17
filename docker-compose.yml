@@ -1,30 +1,30 @@
 services:
   postgres:
     image: postgres:15-alpine
-    container_name: jarvis-postgres
+    container_name: cerebro-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ${DB_USER:-jarvis}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-jarvis}
-      POSTGRES_DB: ${DB_NAME:-jarvis_db}
+      POSTGRES_USER: ${DB_USER:-cerebro}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-cerebro}
+      POSTGRES_DB: ${DB_NAME:-cerebro_db}
       POSTGRES_INITDB_ARGS: "-E UTF8 --locale=pt_BR.UTF-8"
     volumes:
       - ./data/postgres:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-jarvis}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-cerebro}"]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
-      - jarvis-network
+      - cerebro-network
 
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: jarvis-backend
+    container_name: cerebro-backend
     restart: unless-stopped
     depends_on:
       postgres:
@@ -32,10 +32,10 @@ services:
     environment:
       # Database
       DB_HOST: postgres
-      DB_PORT: 5432
-      DB_USER: ${DB_USER:-jarvis}
-      DB_PASSWORD: ${DB_PASSWORD:-jarvis}
-      DB_NAME: ${DB_NAME:-jarvis_db}
+      DB_PORT: ${DB_PORT:-5432}
+      DB_USER: ${DB_USER:-cerebro}
+      DB_PASSWORD: ${DB_PASSWORD:-cerebro}
+      DB_NAME: ${DB_NAME:-cerebro_db}
       # Microphone
       MIC_DEVICE_ID: ${MIC_DEVICE_ID:-0}
       MIC_SAMPLE_RATE: ${MIC_SAMPLE_RATE:-16000}
@@ -62,8 +62,8 @@ services:
     devices:
       - /dev/snd  # For microphone access
     networks:
-      - jarvis-network
+      - cerebro-network
 
 networks:
-  jarvis-network:
+  cerebro-network:
     driver: bridge

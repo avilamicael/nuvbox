@@ -70,9 +70,9 @@ def load_settings() -> Settings:
         db=DBSettings(
             host=os.getenv("DB_HOST", "localhost"),
             port=int(os.getenv("DB_PORT", "5432")),
-            user=os.getenv("DB_USER", "jarvis"),
-            password=os.getenv("DB_PASSWORD", "jarvis"),
-            name=os.getenv("DB_NAME", "jarvis_db"),
+            user=os.getenv("DB_USER", "cerebro"),
+            password=os.getenv("DB_PASSWORD", "cerebro"),
+            name=os.getenv("DB_NAME", "cerebro_db"),
         ),
         mic=MicSettings(
             device_id=int(os.getenv("MIC_DEVICE_ID", "0")),
