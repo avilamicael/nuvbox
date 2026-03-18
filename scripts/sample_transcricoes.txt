@@ -1,0 +1,42 @@
+# Sample Transcriptions for Testing Module 4
+# Use these as test data for the dry-run and initial batch processing
+
+1. Hoje tive uma reunião com o time do Jarvis para discutir os bugs no PostgreSQL. Precisamos refatorar o módulo de armazenamento antes do deploy na próxima semana.
+
+2. Fui ao médico hoje, tenho que melhorar a minha alimentação e fazer mais exercício. Vou começar a ir na academia de novo.
+
+3. Aprendi um novo conceito de machine learning chamado prompt engineering. Vou estudar mais sobre transformers no fim de semana.
+
+4. Conversei com o chefe sobre possível promoção. Se tudo der certo, vou receber um aumento no salário em três meses.
+
+5. Assisti um tutorial sobre Docker hoje. Achei bem interessante como funciona o isolamento de containers.
+
+6. A minha mãe ligou dizendo que vem me visitar no próximo mês. Vamos comemorar meu aniversário juntos.
+
+7. Implementei um novo endpoint na API REST usando FastAPI. O teste de performance foi excelente, consegui processar 10k requisições por segundo.
+
+8. Li um artigo interessante sobre semantic search e embeddings. Preciso investigar como usar pgvector no Jarvis.
+
+9. Tive dor nas costas hoje. Acho que foi por ficar muito tempo na frente do computador. Vou começar a fazer yoga.
+
+10. Participei de um webinar sobre a arquitetura de sistemas em escala. Aprendi muito sobre load balancing e cache distribuído.
+
+11. Meu amigo Carlos me convidou para fazer uma trilha no fim de semana. Vamos na Serra da Mantiqueira.
+
+12. Descobri um bug crítico no módulo 3 de armazenamento. A transcrição não estava sendo persistida corretamente. Já corrigi e fiz deploy.
+
+13. Comecei a estudar português novamente. Quero melhorar meu português técnico para escrever melhor a documentação.
+
+14. A mãe pediu para buscar pão na padaria. Depois preciso comprar coisas no supermercado para o almoço de domingo.
+
+15. Tive insight sobre como melhorar a extração de entidades usando o novo modelo GPT-4. Vou testar na próxima semana.
+
+16. Problemas com a internet hoje de novo. Liguei para a operadora e dizem que vão enviar um técnico na terça.
+
+17. Vi um vídeo muito bom sobre otimização de queries em PostgreSQL. Preciso aplicar essas técnicas no projeto Jarvis.
+
+18. Lembrei que preciso agendar consulta de dentista. Faz mais de um ano que não vou ao dentista.
+
+19. Finalizei a primeira versão da documentação do Módulo 4 em Obsidian. Falta revisar e adicionar diagramas.
+
+20. Conversei com o Vitor sobre possível parceria no novo projeto. Ele está interessado em contribuir no Jarvis.

@@ -5,8 +5,9 @@ const initialChecked = {
   // Ambiente & Setup
   a1: true, a2: true, a3: true, a4: true, a5: true,
   b1: true, b2: true, b3: true,
-  c1: true, c2: true, c3: true, c5: true, c6: true, c8: true,
+  c1: true, c2: true, c3: true, c5: true, c6: true, c7: true, c8: true,
   d1: true, d2: true, d3: true, d4: true, d5: true,
+  e1: true, e2: true, e3: true, e4: true, e5: true,
   f1: true, f3: true,
   // Módulo 1 — captura + VAD
   m1a1: true, m1a2: true, m1a3: true,
@@ -20,6 +21,10 @@ const initialChecked = {
   // Módulo 3
   m3a1: true, m3a3: true, m3a4: true,
   m3b1: true, m3b2: true, m3b3: true,
+  // Módulo 4 — Processamento IA (GPT-4o mini)
+  m4a1: true, m4a2: true, m4a3: true, m4a4: true, m4a5: true,
+  m4b1: true, m4b2: true, m4b3: true, m4b4: true,
+  m4c1: true, m4c2: true, m4c3: true, m4c4: true, m4c5: true, m4c6: true,
   // Sistema
   s1: true, s3: true, s4: true, s8: true, s9: true,
 };
@@ -242,6 +247,12 @@ const data = {
           ]
         },
         {
+          title: "🚨 Alerta — Qualidade de Áudio",
+          items: [
+            { id: "m2c1", text: "Investigar qualidade de captura de áudio (latência, ruído, cortes)", note: "MVP já escuta áudio 24/7 mas precisa otimizar: (1) Microfone: verificar sensibilidade, nível de ruído do hardware; (2) Whisper: model size (tiny/base/small), idioma fixo vs. auto; (3) Pipeline: VAD_SILENCE_DURATION_MS, sample rate, processamento paralelo. A qualidade das transcrições depende desses fatores. Priorizar ao escalar para múltiplos usuários." },
+          ]
+        },
+        {
           title: "Metadados",
           items: [
             { id: "m2b1", text: "Timestamp de início/fim de cada fragmento capturado", note: "AudioChunk.captured_at preenchido em mic_source.py. duracao_ms calculado e salvo no banco." },
@@ -310,6 +321,58 @@ const data = {
             { id: "m4c4", text: "Agendamento do batch (diário, ex: 23h)", note: "Linux: cron job. Windows: Task Scheduler. Ou APScheduler dentro do Python para independência de SO." },
             { id: "m4c5", text: "Log detalhado do batch", note: "Registrar: quantas transcrições processadas, custo estimado em tokens, erros, tempo total de execução." },
             { id: "m4c6", text: "Limite de custo diário", note: "Se o batch está custando mais do que $X/dia, parar e alertar. Proteção contra loop infinito ou volume inesperado." },
+          ]
+        },
+        {
+          title: "⚠️ Decisão Futura: Multi-Provider com Interface Admin",
+          items: [
+            { id: "m4d1", text: "[FUTURO] Migrar providers LLM para tabela no banco de dados", note: "Hoje: providers configurados via .env (Groq como padrão). Quando houver UI admin (ex: migrar Flask → Django, ou construir painel próprio), criar tabela llm_providers com suporte a múltiplas contas Groq, OpenAI, Anthropic, Google etc. — com fallback automático, round-robin e tracking por provider. Não vale implementar sem UI de gestão." },
+          ]
+        }
+      ]
+    },
+    {
+      id: "modulo5",
+      label: "MÓDULO 5 — ARMAZENAMENTO ESTRUTURADO (GRAFO)",
+      color: "#10B981",
+      icon: "🌐",
+      groups: [
+        {
+          title: "Schema Estruturado em PostgreSQL",
+          items: [
+            { id: "m5a1", text: "Tabelas base criadas (entidades, fragmentos, tópicos)", note: "Criadas em Módulo 4. Aqui: adicionar constraints FK, índices de performance, default values. Schema final em backend/modulo5_estruturado/schema.sql" },
+            { id: "m5a2", text: "Tabela 'entidades': nome único + case-insensitive", note: "CONSTRAINT unique_entidade_nome UNIQUE (LOWER(nome)). Evita duplicatas e permite busca case-insensitive." },
+            { id: "m5a3", text: "Tabela 'entidade_entidade' para relacionamentos", note: "Campos: entidade_id_a, entidade_id_b, tipo_relacao (mencionada_junto, está_em, conhece, etc), peso (0-1). Futuro grafo de conhecimento." },
+            { id: "m5a4", text: "Índices em busca: LOWER(nome) em entidades, LOWER(nome) em tópicos", note: "CREATE INDEX idx_entidade_nome_lower ON entidades (LOWER(nome)); Essencial para search case-insensitive rápido." },
+            { id: "m5a5", text: "Índices em relacionamentos: entidade_id_a, entidade_id_b, tipo_relacao", note: "CREATE INDEX idx_entidade_entidade_a ON entidade_entidade (entidade_id_a); ... permite path queries futuras." },
+            { id: "m5a6", text: "Constraint: tópicos com árvore hierárquica", note: "topico_id (self-FK) permite tópicos pais. Validação: impedimento de ciclos (futuro, verificar na app)" },
+          ]
+        },
+        {
+          title: "Migração: Raw → Structured",
+          items: [
+            { id: "m5b1", text: "Script de migração one-time: transcricoes → fragmentos", note: "Split transcrições em fragmentos se necessário. Adicionar campos calculados (importance_score default 0.5). Registrar transacao com rollback se erro." },
+            { id: "m5b2", text: "Verificação pós-migração: contagem de registros", note: "SELECT COUNT(*) FROM fragmentos; deve == quantidade de transcrições. Validar integridade de dados." },
+            { id: "m5b3", text: "Backup do schema antigo antes de migração", note: "Renomear tabela transcricoes → transcricoes_backup. Segurança: possibilidade de rollback manual." },
+            { id: "m5b4", text: "Documentação de schema versioning", note: "Manter histórico: v1 (raw), v2 (estruturado), v3 (grafo future). Alembic ou Flyway para migrations automáticas." },
+          ]
+        },
+        {
+          title: "Relacionamentos & Queries de Pattern",
+          items: [
+            { id: "m5c1", text: "Queries de 1-hop: 'Quais entidades aparecem junto com João?'", note: "SELECT DISTINCT e2.nome FROM entidade_entidade ee JOIN entidades e2 ON ee.entidade_id_b = e2.id WHERE ee.entidade_id_a = (SELECT id FROM entidades WHERE nome='João');" },
+            { id: "m5c2", text: "Queries de 2-hop: 'Quais entidades estão 2 passos de João?'", note: "WITH RECURSIVE path AS (...) — PostgreSQL CTE para pathfinding recursivo. Preparação para queries que depois serão MATCH em Cypher (Neo4j)." },
+            { id: "m5c3", text: "Estatísticas de relacionamentos: grau de cada entidade", note: "SELECT nome, COUNT(*) as grau FROM entidades e LEFT JOIN entidade_entidade ee ON e.id=ee.entidade_id_a GROUP BY e.id, e.nome;" },
+            { id: "m5c4", text: "Teste de queries: 20 patterns diferentes manualmente", note: "Antes de expor via API (Módulo 6), validar que as queries fazem sentido e rodamrápido (< 100ms)." },
+          ]
+        },
+        {
+          title: "Preparação para Migração Futura para Grafo (Neo4j)",
+          items: [
+            { id: "m5d1", text: "Documentação de mapping: SQL → Cypher", note: "Como tabelas relacionais viram nós/arestas em Neo4j. Exemplo: entidades → (Entidade), entidade_entidade → [:RELACIONADO_COM]." },
+            { id: "m5d2", text: "Identificar queries que pedem grafo", note: "Quais análises precisam de pathfinding profundo? Clustering? Community detection? Essas rodadas no Neo4j são mais eficientes." },
+            { id: "m5d3", text: "Script de exportação SQL → Cypher (futuro)", note: "Quando migrar, ter script que lê PostgreSQL e gera .cypher para importar em Neo4j. Versionado em docs/." },
+            { id: "m5d4", text: "Avaliação: ficar em PostgreSQL ou migrar para Neo4j?", note: "Métrica: complexidade de queries, latência, volume. No MVP com poucos dados, PostgreSQL é suficiente. Escalar para Neo4j após 100k+ relacionamentos." },
           ]
         }
       ]

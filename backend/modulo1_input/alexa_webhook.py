@@ -39,7 +39,7 @@ def create_alexa_app(text_queue: Queue) -> Flask:
         }
 
         Security:
-        - Validates X-Alexa-Secret header against ALEXA_WEBHOOK_SECRET
+        - Validates X-Alexa-Secret header against CEREBRO_SECRET
         """
         # Validate secret header
         secret = request.headers.get("X-Alexa-Secret", "")

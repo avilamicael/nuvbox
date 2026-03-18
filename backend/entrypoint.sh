@@ -19,7 +19,7 @@ DB_NAME=${DB_NAME:-cerebro_db}
 max_attempts=30
 attempt=0
 while [ $attempt -lt $max_attempts ]; do
-    if pg_isready -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" 2>/dev/null; then
+    if pg_isready -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" 2>/dev/null; then
         echo "✅ PostgreSQL is ready!"
         break
     fi
@@ -40,6 +40,14 @@ PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB
     exit 1
 }
 echo "✅ Schema applied!"
+
+# Apply Module 4 schema migration (new tables and columns)
+echo "📊 Applying Module 4 schema migration..."
+PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -f /app/modulo4_processamento/schema_migration.sql || {
+    echo "❌ Failed to apply Module 4 schema migration"
+    exit 1
+}
+echo "✅ Module 4 schema migration applied!"
 
 # Start the backend
 echo "🎙️  Starting Cerebro backend..."

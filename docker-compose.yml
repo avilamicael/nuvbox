@@ -13,7 +13,7 @@ services:
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-cerebro}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-cerebro} -d ${DB_NAME:-cerebro_db}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -49,10 +49,23 @@ services:
       # Flask
       FLASK_HOST: 0.0.0.0
       FLASK_PORT: 5001
-      ALEXA_WEBHOOK_SECRET: ${ALEXA_WEBHOOK_SECRET:-change_me_before_ngrok}
+      CEREBRO_SECRET: ${CEREBRO_SECRET:-change_me_before_ngrok}
       # Logging
       LOG_DIR: /app/logs
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      # LLM / Módulo 4
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LLM_MODEL: ${LLM_MODEL:-llama-3.1-8b-instant}
+      LLM_BASE_URL: ${LLM_BASE_URL:-https://api.groq.com/openai/v1}
+      LLM_PROVIDER: ${LLM_PROVIDER:-groq}
+      LLM_COST_INPUT_PER_1M: ${LLM_COST_INPUT_PER_1M:-0.0}
+      LLM_COST_OUTPUT_PER_1M: ${LLM_COST_OUTPUT_PER_1M:-0.0}
+      MODULO4_BATCH_SIZE: ${MODULO4_BATCH_SIZE:-15}
+      MODULO4_POLL_INTERVAL_SECONDS: ${MODULO4_POLL_INTERVAL_SECONDS:-180}
+      MODULO4_IMPORTANCE_THRESHOLD: ${MODULO4_IMPORTANCE_THRESHOLD:-0.25}
+      MODULO4_DAILY_COST_LIMIT_USD: ${MODULO4_DAILY_COST_LIMIT_USD:-2.00}
+      MODULO4_MAX_RETRIES: ${MODULO4_MAX_RETRIES:-3}
+      MODULO4_DRY_RUN: ${MODULO4_DRY_RUN:-false}
     volumes:
       - ./backend:/app
       - ./logs:/app/logs

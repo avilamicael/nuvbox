@@ -5,13 +5,17 @@ Cerebro Backend - Orquestração Principal
 Sequência de inicialização:
 1. Inicializar logging e handlers de sinal
 2. Inicializar pool de conexão de banco de dados
-3. Criar filas para comunicação inter-thread
-4. Iniciar fonte de áudio (microfone)
-5. Iniciar thread de transcrição
-6. Iniciar thread de armazenamento
-7. Iniciar app Flask (webhook Alexa)
-8. Aguardar sinal de encerramento
-9. Encerramento gracioso: parar fontes, drenar filas, fechar BD
+3. Criar fila de texto para comunicação inter-thread
+4. Iniciar thread de armazenamento
+5. Iniciar BatchWorker (Módulo 4 - processamento IA)
+6. Iniciar app Flask (webhook para todos os clientes)
+7. Aguardar sinal de encerramento
+8. Encerramento gracioso
+
+Captura de áudio é responsabilidade dos clientes do Módulo 1:
+- windows_mic_sender.py → POST /webhook/text
+- Alexa Echo           → POST /webhook/alexa
+- ESP32, BLE, etc.     → POST /webhook/text
 """
 
 import sys
@@ -20,9 +24,9 @@ import time
 from queue import Queue
 from config import settings
 from utils import setup_logger, setup_signal_handlers, is_shutdown_requested, shutdown_event
-from modulo1_input import MicrophoneSource, create_alexa_app
-from modulo2_transcricao import TranscriptionWorker
+from modulo1_input import create_alexa_app
 from modulo3_armazenamento import StorageWorker, initialize_pool, close_pool
+from modulo4_processamento import BatchWorker
 
 logger = setup_logger(__name__)
 
@@ -30,7 +34,7 @@ logger = setup_logger(__name__)
 def main():
     """Main entry point."""
     logger.info("=" * 80)
-    logger.info("🎙️  CEREBRO BACKEND - Starting")
+    logger.info("🧠 CEREBRO BACKEND - Starting")
     logger.info("=" * 80)
 
     try:
@@ -42,35 +46,28 @@ def main():
         logger.info("Initializing database connection pool...")
         initialize_pool()
 
-        # 3. Create inter-thread communication queues
-        logger.info("Creating message queues...")
-        raw_audio_queue = Queue(maxsize=settings.queues.raw_audio_max_size)
+        # 3. Create text queue (clients → StorageWorker)
+        logger.info("Creating message queue...")
         text_queue = Queue(maxsize=settings.queues.text_max_size)
-        logger.info(f"  - raw_audio_queue (max {settings.queues.raw_audio_max_size} items)")
         logger.info(f"  - text_queue (max {settings.queues.text_max_size} items)")
 
-        # 4. Start microphone source (optional, may fail in Docker without audio device)
-        logger.info("Initializing microphone source...")
-        mic_source = None
-        try:
-            mic_source = MicrophoneSource(raw_audio_queue)
-            mic_source.start()
-        except Exception as e:
-            logger.warning(f"⚠️  Microphone unavailable: {e}")
-            logger.warning("   System will run with Alexa webhook only (no microphone input)")
-
-        # 5. Start transcription worker thread
-        logger.info("Starting transcription worker...")
-        transcription_worker = TranscriptionWorker(raw_audio_queue, text_queue)
-        transcription_worker.start()
-
-        # 6. Start storage worker thread
+        # 4. Start storage worker thread
         logger.info("Starting storage worker...")
         storage_worker = StorageWorker(text_queue)
         storage_worker.start()
 
-        # 7. Start Flask app for Alexa webhook (in separate thread)
-        logger.info("Starting Flask app for Alexa webhook...")
+        # 5. Start batch worker thread (Module 4 - AI Processing)
+        logger.info("Starting batch worker (Module 4 - AI Processing)...")
+        try:
+            batch_worker = BatchWorker()
+            batch_worker.start()
+        except Exception as e:
+            logger.warning(f"⚠️  Failed to start batch worker: {e}")
+            logger.warning("   System will run without AI processing (Module 4 disabled)")
+            batch_worker = None
+
+        # 6. Start Flask app (webhook for all clients)
+        logger.info("Starting Flask app...")
         flask_app = create_alexa_app(text_queue)
 
         def run_flask():
@@ -86,52 +83,41 @@ def main():
 
         flask_thread = threading.Thread(target=run_flask, daemon=True, name="FlaskThread")
         flask_thread.start()
-        logger.info(f"✅ Flask listening on {settings.flask.host}:{settings.flask.port}")
 
         logger.info("=" * 80)
         logger.info("✅ CEREBRO BACKEND IS RUNNING")
         logger.info("=" * 80)
-        logger.info("  🎤 Microphone: listening for speech")
-        logger.info(
-            f"  🌐 Alexa webhook: POST http://localhost:{settings.flask.port}/webhook/alexa"
-        )
+        logger.info(f"  🌐 Webhook: POST http://localhost:{settings.flask.port}/webhook/text")
+        logger.info(f"  🌐 Alexa:   POST http://localhost:{settings.flask.port}/webhook/alexa")
         logger.info("  📊 Database: storing transcriptions")
+        logger.info("  🤖 AI Processing: Module 4 (BatchWorker)")
         logger.info("")
         logger.info("Press Ctrl+C to shutdown gracefully")
         logger.info("=" * 80)
 
-        # 8. Wait for shutdown signal
+        # 7. Wait for shutdown signal
         shutdown_event.wait()
 
-        # 9. Graceful shutdown
+        # 8. Graceful shutdown
         logger.info("")
         logger.info("=" * 80)
         logger.info("🛑 SHUTTING DOWN")
         logger.info("=" * 80)
 
-        # Stop microphone (if started)
-        if mic_source:
-            logger.info("Stopping microphone...")
-            mic_source.stop()
-
-        # Wait for queues to drain (with timeout)
-        logger.info("Waiting for queues to drain...")
+        # Wait for queue to drain
+        logger.info("Waiting for text queue to drain...")
         start_drain = time.time()
-        drain_timeout = 30  # seconds
-        while (
-            not raw_audio_queue.empty() or not text_queue.empty()
-        ) and time.time() - start_drain < drain_timeout:
+        while not text_queue.empty() and time.time() - start_drain < 30:
             time.sleep(0.5)
 
-        if not raw_audio_queue.empty():
-            logger.warning(f"⚠️  raw_audio_queue still has {raw_audio_queue.qsize()} items")
         if not text_queue.empty():
             logger.warning(f"⚠️  text_queue still has {text_queue.qsize()} items")
 
-        # Wait for worker threads to finish (with timeout)
+        # Wait for worker threads
         logger.info("Waiting for worker threads...")
-        transcription_worker.join(timeout=5)
         storage_worker.join(timeout=5)
+        if batch_worker:
+            batch_worker.join(timeout=10)
 
         # Close database
         logger.info("Closing database connection pool...")

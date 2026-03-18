@@ -22,5 +22,9 @@ openai-whisper==20231117      # Speech-to-text model
 # Web framework (for Alexa webhook)
 Flask==3.0.0                  # Lightweight web framework
 
+# AI Processing (Module 4)
+openai>=1.52.0                # OpenAI API client (>=1.52 fix httpx proxies conflict)
+PyYAML==6.0.1                 # YAML parsing for user_profile.yaml
+
 # Optional but recommended
 python-json-logger==2.0.7     # JSON logging for better monitoring

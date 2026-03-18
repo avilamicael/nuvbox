@@ -51,8 +51,12 @@ def register_text_webhook(app: Flask, text_queue: Queue) -> None:
 
     @app.route("/webhook/text", methods=["POST"])
     def text_webhook():
-        # Validate secret header
-        secret = request.headers.get("X-Cerebro-Secret", "")
+        # Validate secret header (aceita X-Jarvis-Secret ou X-Cerebro-Secret)
+        secret = (
+            request.headers.get("X-Jarvis-Secret")
+            or request.headers.get("X-Cerebro-Secret")
+            or ""
+        )
         if secret != settings.flask.webhook_secret:
             logger.warning(
                 f"❌ Unauthorized /webhook/text attempt from {request.remote_addr}"

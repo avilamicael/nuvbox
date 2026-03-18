@@ -1,0 +1,77 @@
+# Módulo 0: User Profile & Context
+# Perfil do usuário usado para categorização em Módulo 4
+# Formato: YAML | Linguagem: PT-BR
+
+usuario:
+  nome: "Micael"
+  idioma: "português"
+  fuso_horario: "America/Sao_Paulo"
+
+# Contextos principais (Módulo 0 básico - estático por agora)
+contextos:
+  trabalho:
+    descricao: "Projetos de software, desenvolvimento, arquitetura"
+    palavras_chave:
+      - "Jarvis"
+      - "Cerebro"
+      - "código"
+      - "bug"
+      - "feature"
+      - "deploy"
+      - "backend"
+      - "frontend"
+      - "Python"
+      - "React"
+
+  pessoal:
+    descricao: "Vida pessoal, saúde, lazer, relacionamentos"
+    palavras_chave:
+      - "família"
+      - "saúde"
+      - "exercício"
+      - "hobby"
+      - "leitura"
+      - "viagem"
+
+  estudos:
+    descricao: "Aprendizado, cursos, pesquisa"
+    palavras_chave:
+      - "aprender"
+      - "estudo"
+      - "curso"
+      - "documentação"
+      - "tutorial"
+      - "research"
+
+  finanzas:
+    descricao: "Assuntos financeiros e negócios"
+    palavras_chave:
+      - "custo"
+      - "orçamento"
+      - "investimento"
+      - "receita"
+      - "despesa"
+
+# Tipos de entidades que o sistema deve extrair
+entidade_tipos:
+  - "pessoa"        # Maria, João, Chefe
+  - "empresa"       # Google, Cerebro Inc, Startup XYZ
+  - "projeto"       # Jarvis, Cerebro, App Mobile
+  - "lugar"         # São Paulo, Escritório, Café
+  - "conceito"      # IA, Machine Learning, Blockchain
+  - "ferramenta"    # Python, Docker, PostgreSQL
+
+# Perfil de importância (para threshold do módulo 4)
+# importance_score >= threshold → salvar em fragmentos
+importancia_config:
+  threshold: 0.25
+
+  # Boosts específicos
+  boost_entidades:
+    pessoa:
+      Micael: 0.95  # Sempre importante
+      familia: 0.80
+
+  boost_topicos:
+    "Trabalho > Jarvis": 0.90
+    "Trabalho": 0.75
