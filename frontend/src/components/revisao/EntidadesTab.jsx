@@ -7,14 +7,14 @@ const STATUS_COLORS = {
   ambiguo: "#FF6B6B",
 };
 
-const TIPOS = ["pessoa", "empresa", "projeto", "tecnologia", "outro"];
+const TIPOS = ["pessoa", "empresa", "projeto", "lugar", "conceito", "ferramenta", "evento", "tarefa", "decisao", "ideia", "produto"];
 
 export default function EntidadesTab() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [editingId, setEditingId] = useState(null);
-  const [editValue, setEditValue] = useState({ nome: "", descricao: "", status: "" });
+  const [editValue, setEditValue] = useState({ nome: "", descricao: "", status: "", tipo: "", variante: "" });
   const [busca, setBusca] = useState("");
   const [filtroStatus, setFiltroStatus] = useState("");
   const [feedback, setFeedback] = useState({});
@@ -43,6 +43,8 @@ export default function EntidadesTab() {
       nome: item.nome,
       descricao: item.descricao || "",
       status: item.status,
+      tipo: item.tipo,
+      variante: item.variante || "",
     });
   }
 
@@ -51,7 +53,7 @@ export default function EntidadesTab() {
       const result = await patchEntidade(id, editValue);
       setItems(items.map(item => item.id === id ? result.item : item));
       setEditingId(null);
-      setEditValue({ nome: "", descricao: "", status: "" });
+      setEditValue({ nome: "", descricao: "", status: "", tipo: "", variante: "" });
       setFeedback({ [id]: "success" });
       setTimeout(() => setFeedback({}), 2000);
     } catch (err) {
@@ -67,7 +69,7 @@ export default function EntidadesTab() {
 
   function handleCancel() {
     setEditingId(null);
-    setEditValue({ nome: "", descricao: "", status: "" });
+    setEditValue({ nome: "", descricao: "", status: "", tipo: "", variante: "" });
   }
 
   async function handleDelete(id, nome) {
@@ -191,24 +193,61 @@ export default function EntidadesTab() {
                           resize: "none",
                         }}
                       />
-                      <select
-                        value={editValue.status}
-                        onChange={(e) => setEditValue({ ...editValue, status: e.target.value })}
+                      <div style={{ display: "flex", gap: 8 }}>
+                        <select
+                          value={editValue.status}
+                          onChange={(e) => setEditValue({ ...editValue, status: e.target.value })}
+                          style={{
+                            flex: 1,
+                            padding: 6,
+                            fontSize: 12,
+                            fontFamily: "inherit",
+                            background: "#0D1117",
+                            border: "1px solid #00FFB2",
+                            color: "#E6EDF3",
+                            borderRadius: 2,
+                            cursor: "pointer",
+                          }}
+                        >
+                          <option value="ativo">Ativo</option>
+                          <option value="pendente">Pendente</option>
+                          <option value="ambiguo">Ambíguo</option>
+                        </select>
+                        <select
+                          value={editValue.tipo}
+                          onChange={(e) => setEditValue({ ...editValue, tipo: e.target.value })}
+                          style={{
+                            flex: 1,
+                            padding: 6,
+                            fontSize: 12,
+                            fontFamily: "inherit",
+                            background: "#0D1117",
+                            border: "1px solid #00FFB2",
+                            color: "#E6EDF3",
+                            borderRadius: 2,
+                            cursor: "pointer",
+                          }}
+                        >
+                          {TIPOS.map(t => (
+                            <option key={t} value={t}>{t}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <input
+                        type="text"
+                        value={editValue.variante}
+                        onChange={(e) => setEditValue({ ...editValue, variante: e.target.value })}
+                        placeholder="Variante (ex: mãe, amiga, pai) — opcional"
                         style={{
                           padding: 6,
                           fontSize: 12,
                           fontFamily: "inherit",
                           background: "#0D1117",
-                          border: "1px solid #00FFB2",
+                          border: "1px solid #30363D",
                           color: "#E6EDF3",
                           borderRadius: 2,
-                          cursor: "pointer",
                         }}
-                      >
-                        <option value="ativo">Ativo</option>
-                        <option value="pendente">Pendente</option>
-                        <option value="ambiguo">Ambíguo</option>
-                      </select>
+                      />
                     </div>
                   ) : (
                     <>
@@ -216,12 +255,17 @@ export default function EntidadesTab() {
                         <span style={{ fontSize: 14, fontWeight: 600, color: "#E6EDF3" }}>
                           {item.nome}
                         </span>
+                        {item.variante && (
+                          <span style={{ fontSize: 10, color: "#8B949E", fontStyle: "italic" }}>
+                            ({item.variante})
+                          </span>
+                        )}
                         <span
                           style={{
                             fontSize: 10,
                             padding: "2px 6px",
                             background: STATUS_COLORS[item.status],
-                            color: item.status === "ambiguo" || item.status === "pendente" ? "#0D1117" : "#0D1117",
+                            color: "#0D1117",
                             borderRadius: 2,
                             fontWeight: 600,
                           }}

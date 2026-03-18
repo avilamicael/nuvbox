@@ -204,9 +204,10 @@ class BatchWorker(threading.Thread):
                 parsed = ResponseParser.parse_response(response_text, len(pending))
             except ParserError as e:
                 logger.error(f"❌ Failed to parse batch response: {e}")
-                # Mark all as error
+                # Retornar para pending em vez de marcar como error —
+                # o próximo ciclo vai tentar novamente individualmente
                 for item in pending:
-                    db_queries.mark_error(item["id"], f"Parse error: {str(e)[:200]}")
+                    db_queries.mark_pending_retry(item["id"], f"Parse error: {str(e)[:100]}")
                 return
 
             # Process each result
@@ -334,7 +335,8 @@ class BatchWorker(threading.Thread):
         # Save entidades with EntityResolver disambiguation (M5)
         resolver = EntityResolver(existing_entities or [])
         for ent in normalized["entidades"]:
-            resolve_result = resolver.resolve(ent["nome"], ent["tipo"])
+            variante = ent.get("variante")
+            resolve_result = resolver.resolve(ent["nome"], ent["tipo"], variante=variante)
 
             if resolve_result.entidade_id and resolve_result.status in ("ativo", "pendente"):
                 # Reutilize existing entity (identified by resolver)
@@ -351,6 +353,7 @@ class BatchWorker(threading.Thread):
                     ent["nome"],
                     ent["nome_normalizado"],
                     ent["tipo"],
+                    variante=variante,
                 )
 
             db_queries.save_fragmento_entidade(

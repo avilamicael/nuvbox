@@ -74,9 +74,9 @@ CREATE TABLE IF NOT EXISTS entidades (
     criado_em           TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- Ensure no duplicate (type, nome_normalizado) pairs
-CREATE UNIQUE INDEX IF NOT EXISTS idx_entidades_tipo_normalizado
-    ON entidades (tipo, nome_normalizado);
+-- Unique index inclui variante para permitir homônimos com qualificador diferente
+-- (ex: "Juliana (mãe)" e "Juliana (amiga)" como entidades distintas)
+-- Substituído por idx_entidades_tipo_nome_variante no M6 schema_migration.sql
 
 CREATE INDEX IF NOT EXISTS idx_entidades_frequencia
     ON entidades (frequencia DESC);

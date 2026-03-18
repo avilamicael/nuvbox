@@ -78,10 +78,12 @@ export async function deleteEntidade(id) {
   return response.json();
 }
 
-export async function patchEntidade(id, { nome, descricao, status }) {
+export async function patchEntidade(id, { nome, descricao, status, tipo, variante }) {
   const body = { nome };
   if (descricao) body.descricao = descricao;
   if (status) body.status = status;
+  if (tipo) body.tipo = tipo;
+  if (variante !== undefined) body.variante = variante;  // "" means clear it
 
   const response = await apiFetch(`/dados/entidades/${id}`, {
     method: 'PATCH',

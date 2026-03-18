@@ -34,7 +34,7 @@ def fetch_existing_entities(limit: int = 100) -> List[Dict[str, Any]]:
             cursor = conn.cursor()
             cursor.execute(
                 """
-                SELECT id, nome, nome_normalizado, tipo, descricao
+                SELECT id, nome, nome_normalizado, tipo, descricao, variante
                 FROM entidades
                 WHERE status = 'ativo'
                 ORDER BY frequencia DESC
@@ -42,7 +42,7 @@ def fetch_existing_entities(limit: int = 100) -> List[Dict[str, Any]]:
                 """,
                 (limit,)
             )
-            columns = ["id", "nome", "nome_normalizado", "tipo", "descricao"]
+            columns = ["id", "nome", "nome_normalizado", "tipo", "descricao", "variante"]
             rows = cursor.fetchall()
             return [dict(zip(columns, row)) for row in rows]
 

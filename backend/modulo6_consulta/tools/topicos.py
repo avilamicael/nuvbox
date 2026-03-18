@@ -5,6 +5,7 @@ Ferramentas de consulta por tópico.
 from typing import List, Dict, Any
 from modulo3_armazenamento.db import get_connection
 from modulo6_consulta.registry import register_tool
+from modulo6_consulta.tools._search import ui
 from config import settings
 from utils import setup_logger
 
@@ -32,7 +33,7 @@ def buscar_por_topico(topico: str, usuario_id: int) -> List[Dict[str, Any]]:
         with get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute(
-                """
+                f"""
                 SELECT
                     f.id,
                     f.resumo,
@@ -42,7 +43,7 @@ def buscar_por_topico(topico: str, usuario_id: int) -> List[Dict[str, Any]]:
                 FROM fragmentos f
                 JOIN fragmento_topico ft ON ft.fragmento_id = f.id
                 JOIN topicos t ON t.id = ft.topico_id
-                WHERE t.caminho ILIKE %s
+                WHERE {ui('t.caminho')}
                   AND f.usuario_id = %s
                 ORDER BY f.criado_em DESC
                 LIMIT %s

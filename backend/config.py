@@ -145,7 +145,7 @@ def load_settings() -> Settings:
         ),
         modulo6=Modulo6Settings(
             max_rounds=int(os.getenv("MODULO6_MAX_ROUNDS", "5")),
-            max_fragmentos_por_ferramenta=int(os.getenv("MODULO6_MAX_FRAGMENTOS", "20")),
+            max_fragmentos_por_ferramenta=int(os.getenv("MODULO6_MAX_FRAGMENTOS", "8")),
         ),
         log_dir=os.getenv("LOG_DIR", "logs"),
         log_level=os.getenv("LOG_LEVEL", "DEBUG"),

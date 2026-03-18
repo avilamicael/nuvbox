@@ -141,9 +141,12 @@ class ResponseParser:
                 f"Result idx mismatch: expected {idx}, got {result['idx']}"
             )
 
-        # Validate resumo
-        if not isinstance(result["resumo"], str) or len(result["resumo"]) < 1:
-            raise ParserError(f"Result {idx}: resumo must be non-empty string")
+        # Validate resumo — permitir vazio apenas para itens triviais (score == 0.0)
+        if not isinstance(result["resumo"], str):
+            raise ParserError(f"Result {idx}: resumo must be string")
+        score_zero = float(result.get("importance_score", 0)) == 0.0
+        if len(result["resumo"].strip()) < 1 and not score_zero:
+            raise ParserError(f"Result {idx}: resumo must be non-empty for non-trivial items")
 
         # Validate importance_score
         try:
@@ -212,7 +215,7 @@ class ResponseParser:
         """
         normalized = {
             "idx": result["idx"],
-            "resumo": result["resumo"].strip(),
+            "resumo": result["resumo"].strip() or "[conteúdo trivial]",
             "importance_score": Decimal(str(result["importance_score"])),
             "topicos": [t.strip() for t in result.get("topicos", [])],
             "entidades": [],
@@ -224,11 +227,13 @@ class ResponseParser:
 
         # Normalize entidades
         for ent in result.get("entidades", []):
+            variante_raw = ent.get("variante", "")
             normalized_ent = {
                 "nome": ent["nome"].strip(),
                 "nome_normalizado": ent["nome"].strip().lower(),
                 "tipo": ent["tipo"].strip().lower(),
                 "contexto": ent.get("contexto", "").strip(),
+                "variante": variante_raw.strip() if variante_raw else None,
             }
             normalized["entidades"].append(normalized_ent)
 

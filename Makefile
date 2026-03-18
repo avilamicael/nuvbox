@@ -1,4 +1,4 @@
-.PHONY: help up down logs lint test clean reset webhook-test db-recent db-size db-debug db-full db-reset db-nuke
+.PHONY: help up down logs lint test clean reset webhook-test db-recent db-size db-debug db-full db-reset db-nuke db-m4-status db-fragmentos db-entidades db-topicos db-search
 
 help:
 	@echo "Cerebro Backend - Development Commands"
@@ -17,6 +17,14 @@ help:
 	@echo "  make db-debug        - Last 10 transcriptions (texto completo + duração)"
 	@echo "  make db-full N=5     - Ver texto completo do último N registro"
 	@echo "  make db-size         - Database size"
+	@echo ""
+	@echo "🔍 DEBUG M4/M6:"
+	@echo "  make db-m4-status    - Status de cada transcrição no pipeline M4"
+	@echo "  make db-fragmentos   - Fragmentos gerados pelo M4 (resumo + score)"
+	@echo "  make db-entidades    - Entidades extraídas pelo M4"
+	@echo "  make db-topicos      - Tópicos extraídos pelo M4"
+	@echo "  make db-search Q=foo - Busca 'foo' em fragmentos, entidades e tópicos"
+	@echo "  make db-retry-errors - Retorna transcrições com erro de parse para pending"
 	@echo ""
 	@echo "🧪 TESTES:"
 	@echo "  make test            - Test microphone"
@@ -124,3 +132,54 @@ shell:
 
 shell-db:
 	docker-compose exec postgres psql -U cerebro -d cerebro_db
+
+db-m4-status:
+	@echo "Status das transcrições no pipeline M4..."
+	docker-compose exec -T postgres psql -U cerebro -d cerebro_db -c \
+		"SELECT t.id, LEFT(t.texto, 60) AS preview, t.status, t.processado_em, \
+		        CASE WHEN f.id IS NOT NULL THEN 'sim' ELSE 'nao' END AS tem_fragmento \
+		 FROM transcricoes t \
+		 LEFT JOIN fragmentos f ON f.transcricao_id = t.id \
+		 ORDER BY t.id DESC LIMIT 20;"
+
+db-fragmentos:
+	@echo "Fragmentos gerados pelo M4..."
+	docker-compose exec -T postgres psql -U cerebro -d cerebro_db -c \
+		"SELECT f.id, f.importance_score, f.sentimento, f.criado_em, \
+		        LEFT(f.resumo, 100) AS resumo \
+		 FROM fragmentos f \
+		 ORDER BY f.id DESC LIMIT 20;"
+
+db-entidades:
+	@echo "Entidades extraídas pelo M4..."
+	docker-compose exec -T postgres psql -U cerebro -d cerebro_db -c \
+		"SELECT e.id, e.nome, e.tipo, e.frequencia, e.status, e.ultima_mencao_em \
+		 FROM entidades e \
+		 ORDER BY e.frequencia DESC, e.id DESC LIMIT 30;"
+
+db-topicos:
+	@echo "Tópicos extraídos pelo M4..."
+	docker-compose exec -T postgres psql -U cerebro -d cerebro_db -c \
+		"SELECT t.id, t.caminho, t.frequencia, t.ultima_mencao_em \
+		 FROM topicos t \
+		 ORDER BY t.frequencia DESC, t.id DESC LIMIT 30;"
+
+db-retry-errors:
+	@echo "Retornando transcrições com erro de parse para pending..."
+	docker-compose exec -T postgres psql -U cerebro -d cerebro_db -c \
+		"UPDATE transcricoes SET status = 'pending', modulo4_erro = NULL \
+		 WHERE status = 'error' \
+		 RETURNING id, LEFT(texto, 60) AS preview;"
+
+db-search:
+	@echo "Buscando '${Q}' em fragmentos, entidades e tópicos..."
+	docker-compose exec -T postgres psql -U cerebro -d cerebro_db -c \
+		"SELECT 'fragmento' AS fonte, id::text, LEFT(resumo, 100) AS valor \
+		 FROM fragmentos WHERE resumo ILIKE '%${Q}%' \
+		 UNION ALL \
+		 SELECT 'entidade', id::text, nome || ' (' || tipo || ')' \
+		 FROM entidades WHERE nome ILIKE '%${Q}%' \
+		 UNION ALL \
+		 SELECT 'topico', id::text, caminho \
+		 FROM topicos WHERE caminho ILIKE '%${Q}%' \
+		 ORDER BY fonte, id;"

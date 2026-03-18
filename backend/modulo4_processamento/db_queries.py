@@ -148,6 +148,31 @@ def mark_skipped(transcricao_id: int, reason: str = "importance < threshold") ->
         raise DBQueriesError(f"Mark skipped failed: {e}")
 
 
+def mark_pending_retry(transcricao_id: int, reason: str = "") -> None:
+    """
+    Retorna uma transcrição para status 'pending' após falha de parse em batch.
+
+    Usado quando o batch inteiro falhou no parse mas as transcrições individuais
+    podem ainda ser válidas. O próximo ciclo do BatchWorker vai reprocessá-las.
+    """
+    try:
+        with get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                """
+                UPDATE transcricoes
+                SET status = 'pending', modulo4_erro = %s
+                WHERE id = %s
+                """,
+                (f"[retry] {reason}"[:200], transcricao_id),
+            )
+            conn.commit()
+            logger.debug(f"🔄 Transcription {transcricao_id} returned to pending for retry")
+    except Exception as e:
+        logger.error(f"❌ Failed to mark pending retry: {e}")
+        raise DBQueriesError(f"Mark pending retry failed: {e}")
+
+
 def mark_error(transcricao_id: int, error_msg: str) -> None:
     """Mark a transcription as errored."""
     try:
@@ -221,15 +246,17 @@ def save_fragment(
 def upsert_entidade(
     nome: str,
     nome_normalizado: str,
-    tipo: str
+    tipo: str,
+    variante: str = None,
 ) -> int:
     """
-    Insert or update entity (deduplication by tipo + nome_normalizado).
+    Insert or update entity (deduplication by tipo + nome_normalizado + variante).
 
     Args:
         nome: Raw entity name
         nome_normalizado: Lowercase version for deduplication
         tipo: Entity type
+        variante: Optional qualifier to disambiguate homonyms (e.g., 'mãe', 'amiga')
 
     Returns:
         ID of inserted/existing entity
@@ -238,19 +265,19 @@ def upsert_entidade(
         with get_connection() as conn:
             cursor = conn.cursor()
 
-            # Try insert (will fail if exists)
+            # Try insert (will fail if unique index conflict)
             try:
                 cursor.execute(
                     """
-                    INSERT INTO entidades (nome, nome_normalizado, tipo, criado_em)
-                    VALUES (%s, %s, %s, NOW())
+                    INSERT INTO entidades (nome, nome_normalizado, tipo, variante, criado_em)
+                    VALUES (%s, %s, %s, %s, NOW())
                     RETURNING id
                     """,
-                    (nome, nome_normalizado, tipo)
+                    (nome, nome_normalizado, tipo, variante)
                 )
                 entidade_id = cursor.fetchone()[0]
                 conn.commit()
-                logger.debug(f"Created entity: {tipo}/{nome_normalizado} (id={entidade_id})")
+                logger.debug(f"Created entity: {tipo}/{nome_normalizado} variante={variante} (id={entidade_id})")
                 return entidade_id
 
             except Exception:
@@ -260,16 +287,22 @@ def upsert_entidade(
                     """
                     UPDATE entidades
                     SET frequencia = frequencia + 1, ultima_mencao_em = NOW()
-                    WHERE tipo = %s AND nome_normalizado = %s
+                    WHERE tipo = %s AND nome_normalizado = %s AND COALESCE(variante, '') = %s
                     RETURNING id
                     """,
-                    (tipo, nome_normalizado)
+                    (tipo, nome_normalizado, variante or "")
                 )
-                entidade_id = cursor.fetchone()[0]
-                conn.commit()
-                logger.debug(f"Updated entity: {tipo}/{nome_normalizado} (id={entidade_id})")
-                return entidade_id
+                row = cursor.fetchone()
+                if row:
+                    entidade_id = row[0]
+                    conn.commit()
+                    logger.debug(f"Updated entity: {tipo}/{nome_normalizado} variante={variante} (id={entidade_id})")
+                    return entidade_id
+                # Edge case: insert failed but update found nothing — re-raise
+                raise DBQueriesError(f"Upsert entity inconsistency: {tipo}/{nome_normalizado}")
 
+    except DBQueriesError:
+        raise
     except Exception as e:
         logger.error(f"❌ Failed to upsert entity: {e}")
         raise DBQueriesError(f"Upsert entity failed: {e}")

@@ -61,6 +61,14 @@ def get_all_tools() -> list:
     return list(_schemas.values())
 
 
+def get_tools_by_names(names: list) -> list:
+    """
+    Return only the requested tools by name, preserving order.
+    Unknown names are silently ignored.
+    """
+    return [_schemas[n] for n in names if n in _schemas]
+
+
 def dispatch(nome: str, args: dict, usuario_id: int):
     """
     Execute a registered tool by name, injecting usuario_id server-side.

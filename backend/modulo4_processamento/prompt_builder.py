@@ -90,6 +90,16 @@ Extraia TODAS as entidades mencionadas. Para cada uma:
 - **tipo**: Um dos tipos abaixo (ou outro se nenhum se encaixar):
 {entidade_tipos_str}
 - **contexto**: Trecho literal da transcrição onde foi mencionada (máx 100 chars)
+- **variante** (opcional): Qualificador curto para desambiguar pessoas com mesmo nome.
+  Use SOMENTE quando a transcrição indicar claramente a relação/papel da pessoa.
+  Exemplos: "mãe", "pai", "irmão", "amiga", "colega", "chefe", "namorada".
+  Se não houver ambiguidade óbvia, omita o campo.
+
+Distinções importantes de tipo:
+- **empresa**: organização real onde o usuário trabalha, é cliente, fornecedor ou parceiro (ex: "trabalho na Via Exata", "a empresa X me contratou")
+- **projeto**: iniciativa ou produto que o usuário está construindo/desenvolvendo (ex: "o projeto Cerebro", "estou desenvolvendo o app Y")
+- **pessoa**: indivíduo humano com nome próprio
+- **ferramenta**: software, biblioteca, framework, serviço (ex: Docker, Python, Groq, Whisper)
 
 ## 5. Itens de Ação (action_items)
 - Liste tarefas ou ações concretas mencionadas: "preciso fazer X", "tem que resolver Y", "lembrar de Z"
@@ -124,6 +134,12 @@ Extraia TODAS as entidades mencionadas. Para cada uma:
           "nome": "Cerebro",
           "tipo": "projeto",
           "contexto": "trecho literal onde foi mencionada"
+        }},
+        {{
+          "nome": "Juliana",
+          "tipo": "pessoa",
+          "contexto": "liguei pra minha mãe Juliana",
+          "variante": "mãe"
         }}
       ],
       "action_items": ["Resolver bug de token expirado no Cerebro"],
@@ -210,7 +226,8 @@ Extraia TODAS as entidades mencionadas. Para cada uma:
         ]
         for ent in entities:
             desc = f" — {ent['descricao']}" if ent.get("descricao") else ""
-            lines.append(f"- {ent['nome']} ({ent['tipo']}){desc} [id={ent['id']}]")
+            var = f" [{ent['variante']}]" if ent.get("variante") else ""
+            lines.append(f"- {ent['nome']}{var} ({ent['tipo']}){desc} [id={ent['id']}]")
 
         lines.append(
             "Se reconhecer uma entidade conhecida, inclua \"id_existente\": <id> no objeto da entidade. "

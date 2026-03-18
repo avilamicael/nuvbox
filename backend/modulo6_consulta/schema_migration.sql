@@ -20,3 +20,21 @@ CREATE INDEX IF NOT EXISTS idx_correcoes_usuario ON correcoes_texto(usuario_id);
 -- Apenas documentando que os valores válidos agora incluem 'deletado':
 -- entidades.status: 'ativo' | 'pendente' | 'ambiguo' | 'deletado'
 -- topicos.status:   'ativo' | 'pendente' | 'deletado'
+
+-- ============================================================================
+-- MIGRATION: campo 'variante' em entidades para desambiguação de homônimos
+-- Permite salvar "Juliana (mãe)" e "Juliana (amiga)" como entidades distintas
+-- mesmo que tenham o mesmo nome e tipo.
+-- ============================================================================
+
+ALTER TABLE entidades
+ADD COLUMN IF NOT EXISTS variante VARCHAR(100);
+
+-- Novo índice único: (tipo, nome_normalizado, variante)
+-- COALESCE transforma NULL em '' para que o índice funcione corretamente,
+-- pois NULL != NULL em SQL e dois registros com variante NULL não colidiriam.
+DROP INDEX IF EXISTS idx_entidades_tipo_normalizado;
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_entidades_tipo_nome_variante
+    ON entidades (tipo, nome_normalizado, COALESCE(variante, ''))
+    WHERE status != 'deletado';

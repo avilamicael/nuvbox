@@ -202,7 +202,7 @@ def register_dados_routes(app: Flask) -> None:
                 # Fetch items
                 cursor.execute(
                     f"""
-                    SELECT id, nome, nome_normalizado, tipo, descricao, status, criado_em
+                    SELECT id, nome, nome_normalizado, tipo, descricao, status, variante, criado_em
                     FROM entidades
                     {where_clause}
                     ORDER BY frequencia DESC, criado_em DESC
@@ -211,7 +211,7 @@ def register_dados_routes(app: Flask) -> None:
                     params,
                 )
 
-                columns = ["id", "nome", "nome_normalizado", "tipo", "descricao", "status", "criado_em"]
+                columns = ["id", "nome", "nome_normalizado", "tipo", "descricao", "status", "variante", "criado_em"]
                 rows = cursor.fetchall()
                 items = [dict(zip(columns, row)) for row in rows]
 
@@ -238,9 +238,16 @@ def register_dados_routes(app: Flask) -> None:
             novo_nome = data.get("nome", "").strip()
             nova_descricao = data.get("descricao", "").strip()
             novo_status = data.get("status", "").strip()
+            novo_tipo = data.get("tipo", "").strip()
+            nova_variante = data.get("variante", "").strip() if data.get("variante") is not None else None
 
             if not novo_nome:
                 return jsonify({"error": "nome is required"}), 400
+
+            TIPOS_VALIDOS = {
+                "pessoa", "empresa", "projeto", "lugar", "conceito",
+                "ferramenta", "evento", "tarefa", "decisao", "ideia", "produto",
+            }
 
             with get_connection() as conn:
                 cursor = conn.cursor()
@@ -254,15 +261,16 @@ def register_dados_routes(app: Flask) -> None:
                 if not row:
                     return jsonify({"error": "not_found"}), 404
 
-                tipo = row[0]
+                tipo_atual = row[0]
+                tipo = novo_tipo if novo_tipo in TIPOS_VALIDOS else tipo_atual
 
                 # Prepare update
-                update_fields = ["nome = %s"]
-                params = [novo_nome]
+                update_fields = ["nome = %s", "nome_normalizado = %s"]
+                params = [novo_nome, novo_nome.lower().strip()]
 
-                nome_normalizado = novo_nome.lower().strip()
-                update_fields.append("nome_normalizado = %s")
-                params.append(nome_normalizado)
+                if tipo != tipo_atual:
+                    update_fields.append("tipo = %s")
+                    params.append(tipo)
 
                 if nova_descricao:
                     update_fields.append("descricao = %s")
@@ -271,6 +279,11 @@ def register_dados_routes(app: Flask) -> None:
                 if novo_status in ["ativo", "pendente", "ambiguo"]:
                     update_fields.append("status = %s")
                     params.append(novo_status)
+
+                # variante: None means no change, "" means clear it
+                if nova_variante is not None:
+                    update_fields.append("variante = %s")
+                    params.append(nova_variante if nova_variante else None)
 
                 params.append(ent_id)
 
@@ -283,8 +296,7 @@ def register_dados_routes(app: Flask) -> None:
                     conn.commit()
                 except Exception as db_error:
                     conn.rollback()
-                    # Check if it's a unique constraint violation
-                    if "idx_entidades_tipo_normalizado" in str(db_error):
+                    if "idx_entidades_tipo_nome_variante" in str(db_error) or "idx_entidades_tipo_normalizado" in str(db_error):
                         return jsonify({
                             "error": "duplicate_name",
                             "message": f"Uma entidade com o nome '{novo_nome}' do tipo '{tipo}' já existe"
@@ -293,14 +305,14 @@ def register_dados_routes(app: Flask) -> None:
 
                 # Fetch updated
                 cursor.execute(
-                    """SELECT id, nome, nome_normalizado, tipo, descricao, status, criado_em
+                    """SELECT id, nome, nome_normalizado, tipo, descricao, status, variante, criado_em
                        FROM entidades WHERE id = %s""",
                     (ent_id,),
                 )
                 row = cursor.fetchone()
                 item = dict(
                     zip(
-                        ["id", "nome", "nome_normalizado", "tipo", "descricao", "status", "criado_em"],
+                        ["id", "nome", "nome_normalizado", "tipo", "descricao", "status", "variante", "criado_em"],
                         row,
                     )
                 )
