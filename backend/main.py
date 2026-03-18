@@ -27,6 +27,7 @@ from utils import setup_logger, setup_signal_handlers, is_shutdown_requested, sh
 from modulo1_input import create_alexa_app
 from modulo3_armazenamento import StorageWorker, initialize_pool, close_pool
 from modulo4_processamento import BatchWorker
+from modulo6_consulta import register_consulta_routes
 
 logger = setup_logger(__name__)
 
@@ -69,6 +70,7 @@ def main():
         # 6. Start Flask app (webhook for all clients)
         logger.info("Starting Flask app...")
         flask_app = create_alexa_app(text_queue)
+        register_consulta_routes(flask_app)
 
         def run_flask():
             try:
@@ -89,8 +91,10 @@ def main():
         logger.info("=" * 80)
         logger.info(f"  🌐 Webhook: POST http://localhost:{settings.flask.port}/webhook/text")
         logger.info(f"  🌐 Alexa:   POST http://localhost:{settings.flask.port}/webhook/alexa")
+        logger.info(f"  🔍 Consulta: POST http://localhost:{settings.flask.port}/consulta")
         logger.info("  📊 Database: storing transcriptions")
         logger.info("  🤖 AI Processing: Module 4 (BatchWorker)")
+        logger.info("  🧠 Query Interface: Module 6 (natural language search)")
         logger.info("")
         logger.info("Press Ctrl+C to shutdown gracefully")
         logger.info("=" * 80)

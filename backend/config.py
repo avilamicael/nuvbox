@@ -74,6 +74,12 @@ class Modulo4Settings:
 
 
 @dataclass
+class Modulo6Settings:
+    max_rounds: int
+    max_fragmentos_por_ferramenta: int
+
+
+@dataclass
 class Settings:
     db: DBSettings
     mic: MicSettings
@@ -83,6 +89,7 @@ class Settings:
     queues: QueueSettings
     llm: LLMSettings
     modulo4: Modulo4Settings
+    modulo6: Modulo6Settings
     log_dir: str
     log_level: str
 
@@ -135,6 +142,10 @@ def load_settings() -> Settings:
             daily_cost_limit_usd=float(os.getenv("MODULO4_DAILY_COST_LIMIT_USD", "2.00")),
             max_retries=int(os.getenv("MODULO4_MAX_RETRIES", "3")),
             dry_run=os.getenv("MODULO4_DRY_RUN", "false").lower() in ("true", "1", "yes"),
+        ),
+        modulo6=Modulo6Settings(
+            max_rounds=int(os.getenv("MODULO6_MAX_ROUNDS", "5")),
+            max_fragmentos_por_ferramenta=int(os.getenv("MODULO6_MAX_FRAGMENTOS", "20")),
         ),
         log_dir=os.getenv("LOG_DIR", "logs"),
         log_level=os.getenv("LOG_LEVEL", "DEBUG"),

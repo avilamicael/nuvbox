@@ -109,6 +109,70 @@ class OpenAIClient:
             f"Último erro: {last_error}"
         )
 
+    def chat_with_tools(self, messages: list, tools: list) -> object:
+        """
+        Faz uma chamada chat completion com tool calling (function calling).
+
+        Args:
+            messages: Lista de mensagens no formato OpenAI [{"role": ..., "content": ...}]
+            tools: Lista de tools no formato OpenAI (get_all_tools())
+
+        Returns:
+            Objeto choice completo (com .message, .finish_reason, .message.tool_calls)
+
+        Raises:
+            OpenAIClientError: se todas as tentativas falharem
+        """
+        last_error = None
+
+        for attempt in range(self.max_retries):
+            try:
+                response = self.client.chat.completions.create(
+                    model=self.model,
+                    messages=messages,
+                    tools=tools if tools else None,
+                    tool_choice="auto" if tools else None,
+                    temperature=0,
+                )
+                choice = response.choices[0]
+                logger.debug(
+                    f"✅ {self.provider} tool-call OK | "
+                    f"finish_reason={choice.finish_reason} | "
+                    f"tokens={response.usage.prompt_tokens}+{response.usage.completion_tokens}"
+                )
+                return choice
+
+            except RateLimitError as e:
+                last_error = e
+                wait_time = 2 ** attempt
+                logger.warning(
+                    f"⚠️  Rate limit {self.provider} "
+                    f"(tentativa {attempt + 1}/{self.max_retries}). "
+                    f"Aguardando {wait_time}s..."
+                )
+                time.sleep(wait_time)
+
+            except APIError as e:
+                last_error = e
+                wait_time = 2 ** attempt
+                logger.warning(
+                    f"⚠️  API error {self.provider} "
+                    f"(tentativa {attempt + 1}/{self.max_retries}): {e}. "
+                    f"Aguardando {wait_time}s..."
+                )
+                time.sleep(wait_time)
+
+            except AuthenticationError as e:
+                raise OpenAIClientError(f"Autenticação falhou ({self.provider}): {e}")
+
+            except Exception as e:
+                raise OpenAIClientError(f"Erro inesperado ({self.provider}): {e}")
+
+        raise OpenAIClientError(
+            f"chat_with_tools falhou após {self.max_retries} tentativas ({self.provider}). "
+            f"Último erro: {last_error}"
+        )
+
     def calculate_cost(self, input_tokens: int, output_tokens: int) -> float:
         """Calcula custo usando preços configurados no .env (Groq = 0.0)."""
         input_cost = (input_tokens / 1_000_000) * settings.llm.cost_input_per_1m
