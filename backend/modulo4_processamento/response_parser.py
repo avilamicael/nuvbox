@@ -29,7 +29,8 @@ class ResponseParser:
     # Valid entity types
     VALID_ENTITY_TYPES = {
         "pessoa", "empresa", "projeto", "lugar",
-        "conceito", "ferramenta"
+        "conceito", "ferramenta", "evento", "tarefa",
+        "decisao", "ideia", "produto",
     }
 
     @staticmethod
@@ -161,7 +162,7 @@ class ResponseParser:
             raise ParserError(f"Result {idx}: topicos must be list")
 
         for topico in result["topicos"]:
-            if not isinstance(topico, str) or len(topico) < 3:
+            if not isinstance(topico, str) or len(topico) < 2:
                 raise ParserError(f"Result {idx}: invalid topico: {topico}")
 
         # Validate entidades
@@ -178,11 +179,20 @@ class ResponseParser:
                         f"Result {idx}: entidade missing field: {field}"
                     )
 
+            # Accept any type — new types may emerge; log unknown ones
             if ent["tipo"] not in ResponseParser.VALID_ENTITY_TYPES:
-                raise ParserError(
-                    f"Result {idx}: invalid entity type '{ent['tipo']}'. "
-                    f"Must be one of: {ResponseParser.VALID_ENTITY_TYPES}"
+                logger.debug(
+                    f"Result {idx}: unknown entity type '{ent['tipo']}' — accepting anyway"
                 )
+
+        # Validate optional fields (new — don't fail if missing)
+        if "action_items" in result and not isinstance(result["action_items"], list):
+            raise ParserError(f"Result {idx}: action_items must be list")
+
+        if "sentimento" in result and result["sentimento"] not in (
+            "positivo", "negativo", "neutro", "misto", None
+        ):
+            logger.debug(f"Result {idx}: unexpected sentimento '{result['sentimento']}'")
 
     @staticmethod
     def normalize_result(result: Dict) -> Dict[str, Any]:
@@ -206,6 +216,10 @@ class ResponseParser:
             "importance_score": Decimal(str(result["importance_score"])),
             "topicos": [t.strip() for t in result.get("topicos", [])],
             "entidades": [],
+            "action_items": result.get("action_items", []),
+            "sentimento": result.get("sentimento", "neutro"),
+            "tem_decisao": bool(result.get("tem_decisao", False)),
+            "tem_pergunta": bool(result.get("tem_pergunta", False)),
         }
 
         # Normalize entidades

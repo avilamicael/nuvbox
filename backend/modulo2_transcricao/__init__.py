@@ -1,7 +1,5 @@
-from modulo2_transcricao.whisper_engine import WhisperEngine
-from modulo2_transcricao.transcription_worker import TranscriptionWorker
-
-__all__ = [
-    "WhisperEngine",
-    "TranscriptionWorker",
-]
+# Módulo 2 — Transcrição Local (não utilizado)
+# Whisper roda no cliente (Pinky Windows app). Backend recebe texto pronto via webhook.
+# Arquivos orphãos mantidos para referência histórica:
+#   - whisper_engine.py
+#   - transcription_worker.py

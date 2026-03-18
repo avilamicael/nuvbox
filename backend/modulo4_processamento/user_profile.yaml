@@ -1,77 +1,91 @@
 # Módulo 0: User Profile & Context
-# Perfil do usuário usado para categorização em Módulo 4
+# Perfil do usuário usado para contextualização em Módulo 4
 # Formato: YAML | Linguagem: PT-BR
+# Atualização manual por enquanto — Módulo 6 terá interface de edição
 
 usuario:
   nome: "Micael"
   idioma: "português"
   fuso_horario: "America/Sao_Paulo"
+  ocupacao: "Desenvolvedor de software, criador do sistema Jarvis/Cerebro"
 
-# Contextos principais (Módulo 0 básico - estático por agora)
+# Projetos ativos — ajudam o LLM a entender contexto de termos técnicos
+projetos_ativos:
+  - nome: "Jarvis / Cerebro"
+    descricao: "Sistema de segunda memória pessoal: captura áudio passivo, transcreve com Whisper, categoriza com LLM, armazena em PostgreSQL. Backend Python, cliente Windows Electron (Pinky)."
+    tecnologias: [Python, Flask, PostgreSQL, Whisper, Docker, React, Electron, TypeScript]
+    status: "em desenvolvimento ativo"
+
+  - nome: "Pinky"
+    descricao: "App Windows (Electron) que captura áudio do microfone, transcreve localmente com Whisper e envia para o backend Jarvis via webhook."
+    tecnologias: [Electron, TypeScript, React, Whisper]
+    status: "em desenvolvimento ativo"
+
+# Contextos de vida — usados para categorização de tópicos
+# O LLM deve usar estes como referência, mas pode criar tópicos novos livremente
 contextos:
   trabalho:
-    descricao: "Projetos de software, desenvolvimento, arquitetura"
-    palavras_chave:
-      - "Jarvis"
-      - "Cerebro"
-      - "código"
-      - "bug"
-      - "feature"
-      - "deploy"
-      - "backend"
-      - "frontend"
-      - "Python"
-      - "React"
+    descricao: "Desenvolvimento de software, arquitetura de sistemas, DevOps"
+    exemplos_topicos:
+      - "Trabalho > Jarvis > Backend"
+      - "Trabalho > Jarvis > Frontend"
+      - "Trabalho > Jarvis > Bugs"
+      - "Trabalho > Jarvis > Deploy"
+      - "Trabalho > Pinky > Audio"
+      - "Trabalho > Infraestrutura > Docker"
+      - "Trabalho > Infraestrutura > PostgreSQL"
+      - "Trabalho > Planejamento"
+
+  aprendizado:
+    descricao: "Estudo de novas tecnologias, cursos, pesquisa técnica"
+    exemplos_topicos:
+      - "Aprendizado > Machine Learning"
+      - "Aprendizado > LLMs"
+      - "Aprendizado > Python"
 
   pessoal:
-    descricao: "Vida pessoal, saúde, lazer, relacionamentos"
-    palavras_chave:
-      - "família"
-      - "saúde"
-      - "exercício"
-      - "hobby"
-      - "leitura"
-      - "viagem"
+    descricao: "Vida pessoal, saúde, lazer, relacionamentos, família"
+    exemplos_topicos:
+      - "Pessoal > Saúde"
+      - "Pessoal > Família"
+      - "Pessoal > Finanças"
+      - "Pessoal > Lazer"
 
-  estudos:
-    descricao: "Aprendizado, cursos, pesquisa"
-    palavras_chave:
-      - "aprender"
-      - "estudo"
-      - "curso"
-      - "documentação"
-      - "tutorial"
-      - "research"
+  ideias:
+    descricao: "Ideias de produtos, funcionalidades, negócios, projetos futuros"
+    exemplos_topicos:
+      - "Ideias > Jarvis > Nova Feature"
+      - "Ideias > Produto"
+      - "Ideias > Negócio"
 
-  finanzas:
-    descricao: "Assuntos financeiros e negócios"
-    palavras_chave:
-      - "custo"
-      - "orçamento"
-      - "investimento"
-      - "receita"
-      - "despesa"
-
-# Tipos de entidades que o sistema deve extrair
+# Tipos de entidade que o sistema deve extrair
+# O LLM pode usar outros tipos se nenhum destes se encaixar
 entidade_tipos:
-  - "pessoa"        # Maria, João, Chefe
-  - "empresa"       # Google, Cerebro Inc, Startup XYZ
-  - "projeto"       # Jarvis, Cerebro, App Mobile
-  - "lugar"         # São Paulo, Escritório, Café
-  - "conceito"      # IA, Machine Learning, Blockchain
-  - "ferramenta"    # Python, Docker, PostgreSQL
+  - "pessoa"       # Nomes de pessoas: amigos, colegas, clientes
+  - "empresa"      # Empresas, organizações: Google, Anthropic, cliente X
+  - "projeto"      # Projetos de software ou pessoais: Jarvis, Pinky, App Mobile
+  - "lugar"        # Locais: São Paulo, escritório, café, país
+  - "conceito"     # Conceitos abstratos: IA, embeddings, microserviços
+  - "ferramenta"   # Tecnologias e ferramentas: Python, Docker, PostgreSQL, VSCode
+  - "evento"       # Eventos: reunião, deadline, lançamento, apresentação
+  - "tarefa"       # Tarefas concretas mencionadas: "preciso fazer X", "tem que resolver Y"
+  - "decisao"      # Decisões tomadas: "vamos usar X", "decidimos que Y"
+  - "ideia"        # Ideias ou insights: "e se fizéssemos X", "seria legal Y"
+  - "produto"      # Produtos comerciais ou internos: SaaS, API, extensão
 
-# Perfil de importância (para threshold do módulo 4)
-# importance_score >= threshold → salvar em fragmentos
+# Configuração de importância
 importancia_config:
   threshold: 0.25
 
-  # Boosts específicos
-  boost_entidades:
-    pessoa:
-      Micael: 0.95  # Sempre importante
-      familia: 0.80
+  # Critérios que elevam importância
+  boost_contextos:
+    "Trabalho": 0.10       # Tudo de trabalho é relevante
+    "Trabalho > Jarvis": 0.20
+    "Ideias": 0.15
 
-  boost_topicos:
-    "Trabalho > Jarvis": 0.90
-    "Trabalho": 0.75
+  boost_entidades:
+    projeto:
+      "Jarvis": 0.20
+      "Pinky": 0.20
+    tarefa: 0.15           # Tarefas sempre são importantes
+    decisao: 0.20          # Decisões também
