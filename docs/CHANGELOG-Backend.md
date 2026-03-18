@@ -5,6 +5,30 @@ description: Histórico de mudanças estruturais e features implementadas
 
 # Changelog — Backend Cerebro (Março 2026)
 
+## [Modulo 5] ✅ 18/03/2026
+
+### Adicionado
+- **Módulo 5** (`backend/modulo5_estruturado/`): Armazenamento estruturado com desambiguação de entidades
+- **EntityResolver** (`entity_resolver.py`): Match exato + fuzzy (difflib, threshold=0.85) para evitar entidades duplicatas — retorna status `ativo`, `pendente` ou `novo`
+- **M5 DB queries** (`db_queries.py`): `fetch_existing_entities()`, `fetch_existing_topics()`, `save_action_items()`, `update_entity_status()`
+- **Schema migration** (`schema_migration.sql`): novos campos + tabela `action_items`
+- **Tabela `action_items`**: Tarefas extraídas pelo LLM com status `pendente|concluido|cancelado`
+
+### Alterado
+- **`save_fragment()`** (`modulo4/db_queries.py`): Agora aceita e persiste `sentimento`, `tem_decisao`, `tem_pergunta`
+- **`BatchWorker._process_batch()`**: Busca entidades/tópicos existentes antes de chamar o LLM e injeta no prompt
+- **`BatchWorker._process_result()`**: Usa `EntityResolver` para desambiguação; salva `action_items` após fragmento; passa campos M5 para `save_fragment()`
+- **`PromptBuilder.build_system_prompt()`**: Aceita `existing_entities` e `existing_topics`; injeta seções "ENTIDADES CONHECIDAS" e "TÓPICOS EXISTENTES" no prompt
+- **`entrypoint.sh`**: Aplica `modulo5_estruturado/schema_migration.sql` na inicialização
+
+### Schema Mudanças
+- **`fragmentos`**: Adicionados `sentimento`, `tem_decisao`, `tem_pergunta`, `usuario_id`; embedding corrigido de `VECTOR(1536)` → `VECTOR(384)` (MiniLM local, M7)
+- **`entidades`**: Adicionados `descricao`, `status` (ativo/pendente/ambiguo), `usuario_id`
+- **`topicos`**: Adicionados `descricao`, `status`, `usuario_id`
+- **`action_items`** (nova tabela): `id`, `fragmento_id`, `texto`, `status`, `atualizado_por`, `criado_em`, `usuario_id`
+
+---
+
 ## [Modulo 4] ✅ 18/03/2026
 
 ### Adicionado

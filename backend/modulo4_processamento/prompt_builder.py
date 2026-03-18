@@ -36,7 +36,11 @@ class PromptBuilder:
         except yaml.YAMLError as e:
             raise PromptBuilderError(f"Invalid YAML in user profile: {e}")
 
-    def build_system_prompt(self) -> str:
+    def build_system_prompt(
+        self,
+        existing_entities: List[Dict[str, Any]] = None,
+        existing_topics: List[Dict[str, Any]] = None,
+    ) -> str:
         usuario = self.user_profile.get("usuario", {})
         nome = usuario.get("nome", "Usuário")
         ocupacao = usuario.get("ocupacao", "")
@@ -44,6 +48,8 @@ class PromptBuilder:
         projetos_str = self._format_projetos()
         contextos_str = self._format_contextos()
         entidade_tipos_str = self._format_entidade_tipos()
+        entity_context_str = self.build_entity_context(existing_entities or [])
+        topic_context_str = self.build_topic_context(existing_topics or [])
 
         return f"""Você é um assistente especializado em extrair informações ricas e detalhadas de transcrições de áudio do sistema Jarvis.
 
@@ -57,7 +63,7 @@ class PromptBuilder:
 # CONTEXTOS E EXEMPLOS DE TÓPICOS
 Os tópicos abaixo são exemplos — você deve criar tópicos novos livremente se o conteúdo não se encaixar nos exemplos.
 {contextos_str}
-
+{entity_context_str}{topic_context_str}
 # TAREFA
 Você receberá um JSON com um array de transcrições de áudio. Para cada transcrição, extraia:
 
@@ -183,6 +189,57 @@ Extraia TODAS as entidades mencionadas. Para cada uma:
         if not tipos:
             return "  pessoa, empresa, projeto, lugar, conceito, ferramenta, evento, tarefa, decisao, ideia, produto"
         return "\n".join(f"  - {t}" for t in tipos)
+
+    @staticmethod
+    def build_entity_context(entities: List[Dict[str, Any]]) -> str:
+        """
+        Build a context block listing known entities for the LLM to reuse.
+
+        Args:
+            entities: List of {id, nome, tipo, descricao} from M5 fetch_existing_entities()
+
+        Returns:
+            Formatted string to inject into the system prompt, or empty string if no entities.
+        """
+        if not entities:
+            return ""
+
+        lines = [
+            "\n# ENTIDADES CONHECIDAS",
+            "Reutilize essas entidades se reconhecê-las na transcrição (não crie duplicatas):",
+        ]
+        for ent in entities:
+            desc = f" — {ent['descricao']}" if ent.get("descricao") else ""
+            lines.append(f"- {ent['nome']} ({ent['tipo']}){desc} [id={ent['id']}]")
+
+        lines.append(
+            "Se reconhecer uma entidade conhecida, inclua \"id_existente\": <id> no objeto da entidade. "
+            "Se não tiver certeza, omita o campo.\n"
+        )
+        return "\n".join(lines)
+
+    @staticmethod
+    def build_topic_context(topics: List[Dict[str, Any]]) -> str:
+        """
+        Build a context block listing existing topics for the LLM to reuse.
+
+        Args:
+            topics: List of {id, caminho, frequencia} from M5 fetch_existing_topics()
+
+        Returns:
+            Formatted string to inject into the system prompt, or empty string if no topics.
+        """
+        if not topics:
+            return ""
+
+        lines = [
+            "\n# TÓPICOS EXISTENTES (mais frequentes)",
+            "Prefira reutilizar esses caminhos de tópico quando o conteúdo se encaixar:",
+        ]
+        for t in topics[:20]:  # Limit to top 20 to keep prompt lean
+            lines.append(f"- {t['caminho']}")
+        lines.append("")
+        return "\n".join(lines)
 
     @staticmethod
     def _dia_semana(weekday: int) -> str:

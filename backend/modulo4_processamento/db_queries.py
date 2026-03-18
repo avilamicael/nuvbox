@@ -173,7 +173,10 @@ def save_fragment(
     importance_score: Decimal,
     input_tokens: int,
     output_tokens: int,
-    model_used: str
+    model_used: str,
+    sentimento: str = None,
+    tem_decisao: bool = False,
+    tem_pergunta: bool = False,
 ) -> int:
     """
     Save a fragment (processed transcription).
@@ -185,6 +188,9 @@ def save_fragment(
         input_tokens: Tokens used for input
         output_tokens: Tokens used for output
         model_used: Model name (e.g., 'gpt-4o-mini')
+        sentimento: positivo|negativo|neutro|misto (M5)
+        tem_decisao: True if a decision was made (M5)
+        tem_pergunta: True if an open question exists (M5)
 
     Returns:
         ID of inserted fragment
@@ -195,11 +201,13 @@ def save_fragment(
             cursor.execute(
                 """
                 INSERT INTO fragmentos
-                (transcricao_id, resumo, importance_score, tokens_input, tokens_output, model_used, criado_em)
-                VALUES (%s, %s, %s, %s, %s, %s, NOW())
+                (transcricao_id, resumo, importance_score, tokens_input, tokens_output,
+                 model_used, sentimento, tem_decisao, tem_pergunta, criado_em)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())
                 RETURNING id
                 """,
-                (transcricao_id, resumo, importance_score, input_tokens, output_tokens, model_used)
+                (transcricao_id, resumo, importance_score, input_tokens, output_tokens,
+                 model_used, sentimento, tem_decisao, tem_pergunta)
             )
             fragmento_id = cursor.fetchone()[0]
             conn.commit()

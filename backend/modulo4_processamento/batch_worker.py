@@ -21,6 +21,8 @@ from modulo4_processamento.prompt_builder import PromptBuilder, PromptBuilderErr
 from modulo4_processamento.response_parser import ResponseParser, ParserError
 from modulo4_processamento.cost_tracker import CostTracker, CostTrackerError
 from modulo4_processamento import db_queries
+from modulo5_estruturado.entity_resolver import EntityResolver
+from modulo5_estruturado import db_queries as m5_db
 
 logger = setup_logger(__name__)
 
@@ -99,8 +101,24 @@ class BatchWorker(threading.Thread):
             for item in pending:
                 db_queries.mark_processing(item["id"])
 
-            # Build prompts
-            system_prompt = self.prompt_builder.build_system_prompt()
+            # Fetch existing entities and topics for disambiguation context
+            existing_entities = []
+            existing_topics = []
+            try:
+                existing_entities = m5_db.fetch_existing_entities(limit=100)
+                existing_topics = m5_db.fetch_existing_topics(limit=50)
+                logger.debug(
+                    f"Loaded {len(existing_entities)} entities and "
+                    f"{len(existing_topics)} topics for context"
+                )
+            except m5_db.M5DBQueriesError as e:
+                logger.warning(f"⚠️  Could not load entity/topic context: {e}")
+
+            # Build prompts with entity/topic context
+            system_prompt = self.prompt_builder.build_system_prompt(
+                existing_entities=existing_entities,
+                existing_topics=existing_topics,
+            )
             user_message = self.prompt_builder.build_user_message(pending)
 
             # Call OpenAI
@@ -144,7 +162,10 @@ class BatchWorker(threading.Thread):
 
             for result in parsed.get("resultados", []):
                 try:
-                    self._process_result(result, pending, fragmentos_processados, fragmentos_skipped)
+                    self._process_result(
+                        result, pending, fragmentos_processados, fragmentos_skipped,
+                        existing_entities=existing_entities,
+                    )
                     if result["importance_score"] >= settings.modulo4.importance_threshold:
                         fragmentos_processados += 1
                     else:
@@ -186,7 +207,8 @@ class BatchWorker(threading.Thread):
         result: Dict[str, Any],
         pending: List[Dict[str, Any]],
         fragmentos_processados: int,
-        fragmentos_skipped: int
+        fragmentos_skipped: int,
+        existing_entities: List[Dict[str, Any]] = None,
     ):
         """
         Process a single extracted result.
@@ -196,6 +218,7 @@ class BatchWorker(threading.Thread):
             pending: List of original pending transcriptions
             fragmentos_processados: Counter (for logging)
             fragmentos_skipped: Counter (for logging)
+            existing_entities: List of known entities for disambiguation (M5)
         """
         idx = result["idx"]
         if idx >= len(pending):
@@ -221,7 +244,7 @@ class BatchWorker(threading.Thread):
             db_queries.mark_processed(transcricao_id)
             return
 
-        # Save fragment
+        # Save fragment with M5 fields
         fragmento_id = db_queries.save_fragment(
             transcricao_id,
             normalized["resumo"],
@@ -229,8 +252,20 @@ class BatchWorker(threading.Thread):
             input_tokens=0,  # Will be set by openai_client
             output_tokens=0,
             model_used=self.openai_client.model,
+            sentimento=normalized.get("sentimento"),
+            tem_decisao=normalized.get("tem_decisao", False),
+            tem_pergunta=normalized.get("tem_pergunta", False),
         )
         logger.debug(f"Saved fragment {fragmento_id} for transcricao {transcricao_id}")
+
+        # Save action items (M5)
+        action_items = normalized.get("action_items", [])
+        if action_items:
+            try:
+                saved = m5_db.save_action_items(fragmento_id, action_items)
+                logger.debug(f"Saved {saved} action items for fragmento {fragmento_id}")
+            except m5_db.M5DBQueriesError as e:
+                logger.warning(f"⚠️  Could not save action items: {e}")
 
         # Save tópicos and link to fragment
         for topico_str in normalized["topicos"]:
@@ -243,13 +278,32 @@ class BatchWorker(threading.Thread):
                 eh_principal=eh_principal
             )
 
-        # Save entidades and link to fragment
+        # Save entidades with EntityResolver disambiguation (M5)
+        resolver = EntityResolver(existing_entities or [])
         for ent in normalized["entidades"]:
-            entidade_id = db_queries.upsert_entidade(
-                ent["nome"],
-                ent["nome_normalizado"],
-                ent["tipo"]
-            )
+            resolve_result = resolver.resolve(ent["nome"], ent["tipo"])
+
+            if resolve_result.entidade_id and resolve_result.status in ("ativo", "pendente"):
+                # Reutilize existing entity — update its frequency
+                entidade_id = db_queries.upsert_entidade(
+                    resolve_result.matched_nome,
+                    resolve_result.matched_nome.lower(),
+                    ent["tipo"],
+                )
+                # Mark as pendente if fuzzy match (needs human review)
+                if resolve_result.status == "pendente":
+                    try:
+                        m5_db.update_entity_status(entidade_id, "pendente")
+                    except m5_db.M5DBQueriesError as e:
+                        logger.warning(f"⚠️  Could not mark entity as pendente: {e}")
+            else:
+                # New entity — create it
+                entidade_id = db_queries.upsert_entidade(
+                    ent["nome"],
+                    ent["nome_normalizado"],
+                    ent["tipo"],
+                )
+
             db_queries.save_fragmento_entidade(
                 fragmento_id,
                 entidade_id,
@@ -261,5 +315,6 @@ class BatchWorker(threading.Thread):
         logger.debug(
             f"Processed: fragmento_id={fragmento_id}, "
             f"topicos={len(normalized['topicos'])}, "
-            f"entidades={len(normalized['entidades'])}"
+            f"entidades={len(normalized['entidades'])}, "
+            f"action_items={len(action_items)}"
         )
