@@ -199,7 +199,7 @@ Problema:
 Mudança para Versão 2 ✓
 ```
 
-### Versão 2 (Atual - Produção)
+### Versão 2 (18/03/2026 — Produção)
 
 ```yaml
 Características:
@@ -213,6 +213,30 @@ Benefícios:
   - Contexto permite deduplicação + verificação
   - Validação de tipos no parser
   - Grafo de entidades pronto para knowledge graph
+```
+
+### Versão 3 (18/03/2026 — Atual)
+
+```yaml
+Mudanças em relação à v2:
+  - Resumo: 1-3 frases (era 1-2), com instrução de ser específico
+  - Tópicos: livres e ilimitados (era máximo 3, amarrado nas categorias)
+  - Tipos de entidade: 6 → 11 (adicionados: evento, tarefa, decisao, ideia, produto)
+  - Novos campos extraídos: action_items, sentimento, tem_decisao, tem_pergunta
+  - Contexto temporal: fonte e hora passados por transcrição
+  - user_profile.yaml: projetos_ativos com tecnologias, exemplos_topicos por contexto
+  - Parser: aceita tipos desconhecidos sem falhar (loga debug)
+
+Motivação:
+  - v2 produzia dados vagos ("falou sobre trabalho") em vez de específicos
+  - Tópicos limitados a 3 perdiam contexto rico
+  - Categorias fixas não cobriam ideias, tarefas, decisões
+  - Sem hora/fonte, LLM não tinha contexto temporal
+
+Exemplo de saída v3 vs v2:
+  v2: resumo: "Falou sobre um bug no sistema"
+  v3: resumo: "Identificou bug de autenticação no Jarvis: token expirado não é renovado
+              automaticamente no endpoint /webhook/text. Planeja corrigir no BatchWorker."
 ```
 
 ---
@@ -243,23 +267,27 @@ Benefícios:
 
 ## 🔐 Validação de Resposta
 
-### Esquema Esperado
+### Esquema Esperado (v3 — Atual)
 
 ```json
 {
   "resultados": [
     {
-      "idx": 0,                      // Ordem de entrada
-      "resumo": "string",           // 1-2 frases (minimo 5 chars)
-      "importance_score": 0.75,     // 0.0-1.0
-      "topicos": ["string"],        // Paths hierarchicos
+      "idx": 0,
+      "resumo": "string descritiva de 1-3 frases com detalhes específicos",
+      "importance_score": 0.75,
+      "topicos": ["Trabalho > Jarvis > Backend > Autenticação"],
       "entidades": [
         {
-          "nome": "string",         // Nome da entidade
-          "tipo": "pessoa|empresa|projeto|lugar|conceito|ferramenta",
-          "contexto": "string"      // Trecho onde foi mencionada
+          "nome": "string",
+          "tipo": "pessoa|empresa|projeto|lugar|conceito|ferramenta|evento|tarefa|decisao|ideia|produto",
+          "contexto": "trecho literal (máx 100 chars)"
         }
-      ]
+      ],
+      "action_items": ["string — tarefas concretas mencionadas"],
+      "sentimento": "positivo|negativo|neutro|misto",
+      "tem_decisao": false,
+      "tem_pergunta": false
     }
   ]
 }
@@ -268,9 +296,11 @@ Benefícios:
 ### Validação Implementada
 
 - `idx` deve ser sequencial (0, 1, 2, ...)
-- `importancia_score` deve estar em [0.0, 1.0]
-- `tipo` deve estar em lista validada
-- Contexto não pode estar vazio
+- `importance_score` deve estar em [0.0, 1.0]
+- `resumo` deve ter ao menos 1 caractere
+- `tipo` de entidade: aceita os 11 tipos definidos + desconhecidos (loga, não falha)
+- `action_items`: deve ser lista (se presente)
+- `sentimento`: aceita os 4 valores + None
 - Tamanho do array deve corresponder ao batch size
 
 ---
