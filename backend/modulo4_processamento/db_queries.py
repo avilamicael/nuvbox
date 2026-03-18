@@ -308,7 +308,7 @@ def upsert_topico(caminho: str) -> int:
     Insert or get topic by hierarchical path.
 
     Args:
-        caminho: e.g., "Trabalho > Jarvis > Bugs"
+        caminho: e.g., "Trabalho > Cerebro > Bugs"
 
     Returns:
         ID of inserted/existing topic

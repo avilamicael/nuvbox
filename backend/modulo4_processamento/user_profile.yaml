@@ -1,77 +1,125 @@
 # Módulo 0: User Profile & Context
 # Perfil do usuário usado para contextualização em Módulo 4
 # Formato: YAML | Linguagem: PT-BR
-# Atualização manual por enquanto — Módulo 6 terá interface de edição
+# Interface de edição disponível via Curadoria de Dados (tela Revisão)
 
 usuario:
   nome: "Micael"
   idioma: "português"
   fuso_horario: "America/Sao_Paulo"
-  ocupacao: "Desenvolvedor de software, criador do sistema Jarvis/Cerebro"
+  ocupacao: >
+    Desenvolvedor de software full-stack e arquiteto de sistemas.
+    Criador do Cerebro/Cerebro — sistema de segunda memória pessoal por voz:
+    captura áudio passivo, transcreve com Whisper, categoriza com LLM, armazena em PostgreSQL.
+    Trabalha com Python (Flask, asyncio), React/Vite, Electron, Docker, PostgreSQL e OpenAI API.
+    Constrói o sistema para uso pessoal primeiro, com visão de escalar para SaaS ou B2B.
 
 # Projetos ativos — ajudam o LLM a entender contexto de termos técnicos
 projetos_ativos:
-  - nome: "Jarvis / Cerebro"
-    descricao: "Sistema de segunda memória pessoal: captura áudio passivo, transcreve com Whisper, categoriza com LLM, armazena em PostgreSQL. Backend Python, cliente Windows Electron (Pinky)."
-    tecnologias: [Python, Flask, PostgreSQL, Whisper, Docker, React, Electron, TypeScript]
-    status: "em desenvolvimento ativo"
+  - nome: "Cerebro / Cerebro"
+    descricao: >
+      Sistema de segunda memória pessoal baseado em voz. Pipeline completo:
+      captura de áudio → VAD (silero) → transcrição Whisper → processamento LLM (GPT-4o mini) →
+      extração de entidades/tópicos/action items → armazenamento PostgreSQL → consulta por linguagem natural.
+      Backend Python (Flask), frontend React (checklist + curadoria), módulos M0–M6 implementados.
+      M7 (embeddings/busca semântica) é o próximo passo.
+    tecnologias: [Python, Flask, PostgreSQL, Whisper, Docker, React, Vite, OpenAI]
+    status: "em desenvolvimento ativo — M1 a M6 implementados, M7 em planejamento"
 
   - nome: "Pinky"
-    descricao: "App Windows (Electron) que captura áudio do microfone, transcreve localmente com Whisper e envia para o backend Jarvis via webhook."
-    tecnologias: [Electron, TypeScript, React, Whisper]
+    descricao: >
+      App Windows (Electron + TypeScript) que captura áudio do microfone, transcreve localmente
+      com Whisper e envia para o backend Cerebro via webhook. Interface de bandeja do sistema.
+      Funciona como o "sensor" de entrada do Cerebro no desktop.
+    tecnologias: [Electron, TypeScript, React, Whisper, Node.js]
     status: "em desenvolvimento ativo"
+
+  - nome: "Cerebro Checklist / Curadoria"
+    descricao: >
+      Frontend React do Cerebro com duas telas: (1) Checklist de progresso do projeto,
+      (2) Curadoria de dados — revisão e correção de fragmentos, entidades, tópicos,
+      tarefas e correções de transcrição (ex: "prômitos" → "prompts").
+    tecnologias: [React, Vite, JavaScript]
+    status: "implementado e em uso"
 
 # Contextos de vida — usados para categorização de tópicos
 # O LLM deve usar estes como referência, mas pode criar tópicos novos livremente
 contextos:
   trabalho:
-    descricao: "Desenvolvimento de software, arquitetura de sistemas, DevOps"
+    descricao: "Desenvolvimento de software, arquitetura de sistemas, DevOps, planejamento técnico"
     exemplos_topicos:
-      - "Trabalho > Jarvis > Backend"
-      - "Trabalho > Jarvis > Frontend"
-      - "Trabalho > Jarvis > Bugs"
-      - "Trabalho > Jarvis > Deploy"
+      - "Trabalho > Cerebro > Backend"
+      - "Trabalho > Cerebro > Backend > M4 Processamento"
+      - "Trabalho > Cerebro > Backend > M5 Storage"
+      - "Trabalho > Cerebro > Backend > M6 Consulta"
+      - "Trabalho > Cerebro > Backend > M7 Embeddings"
+      - "Trabalho > Cerebro > Frontend"
+      - "Trabalho > Cerebro > Frontend > Curadoria"
+      - "Trabalho > Cerebro > Bugs"
+      - "Trabalho > Cerebro > Deploy"
+      - "Trabalho > Cerebro > Arquitetura"
+      - "Trabalho > Cerebro > Planejamento"
       - "Trabalho > Pinky > Audio"
+      - "Trabalho > Pinky > Electron"
       - "Trabalho > Infraestrutura > Docker"
       - "Trabalho > Infraestrutura > PostgreSQL"
+      - "Trabalho > Infraestrutura > Deploy"
       - "Trabalho > Planejamento"
+      - "Trabalho > Code Review"
+      - "Trabalho > Debugging"
 
   aprendizado:
-    descricao: "Estudo de novas tecnologias, cursos, pesquisa técnica"
+    descricao: "Estudo de novas tecnologias, cursos, pesquisa técnica, leituras"
     exemplos_topicos:
       - "Aprendizado > Machine Learning"
       - "Aprendizado > LLMs"
+      - "Aprendizado > Embeddings"
       - "Aprendizado > Python"
+      - "Aprendizado > React"
+      - "Aprendizado > TypeScript"
+      - "Aprendizado > Banco de Dados"
+      - "Aprendizado > DevOps"
 
   pessoal:
-    descricao: "Vida pessoal, saúde, lazer, relacionamentos, família"
+    descricao: "Vida pessoal, saúde, lazer, relacionamentos, família, finanças"
     exemplos_topicos:
       - "Pessoal > Saúde"
       - "Pessoal > Família"
       - "Pessoal > Finanças"
       - "Pessoal > Lazer"
+      - "Pessoal > Rotina"
+      - "Pessoal > Reflexão"
+      - "Pessoal > Amigos"
 
   ideias:
-    descricao: "Ideias de produtos, funcionalidades, negócios, projetos futuros"
+    descricao: "Ideias de produtos, funcionalidades, negócios, projetos futuros, insights"
     exemplos_topicos:
-      - "Ideias > Jarvis > Nova Feature"
+      - "Ideias > Cerebro > Nova Feature"
+      - "Ideias > Cerebro > Monetização"
+      - "Ideias > Cerebro > SaaS"
       - "Ideias > Produto"
       - "Ideias > Negócio"
+      - "Ideias > Tech"
+
+  decisoes:
+    descricao: "Decisões técnicas, arquiteturais ou pessoais tomadas"
+    exemplos_topicos:
+      - "Decisão > Cerebro > Arquitetura"
+      - "Decisão > Cerebro > Tech Stack"
+      - "Decisão > Pessoal"
 
 # Tipos de entidade que o sistema deve extrair
 # O LLM pode usar outros tipos se nenhum destes se encaixar
 entidade_tipos:
-  - "pessoa"       # Nomes de pessoas: amigos, colegas, clientes
-  - "empresa"      # Empresas, organizações: Google, Anthropic, cliente X
-  - "projeto"      # Projetos de software ou pessoais: Jarvis, Pinky, App Mobile
+  - "pessoa"       # Nomes de pessoas: amigos, colegas, clientes, influências
+  - "empresa"      # Empresas, organizações: Google, Anthropic, OpenAI, cliente X
+  - "projeto"      # Projetos de software ou pessoais: Cerebro, Pinky, App Mobile
+  - "ferramenta"   # Tecnologias e ferramentas: Python, Docker, PostgreSQL, VSCode, Whisper
+  - "conceito"     # Conceitos abstratos: embeddings, microserviços, VAD, RAG, fine-tuning
   - "lugar"        # Locais: São Paulo, escritório, café, país
-  - "conceito"     # Conceitos abstratos: IA, embeddings, microserviços
-  - "ferramenta"   # Tecnologias e ferramentas: Python, Docker, PostgreSQL, VSCode
-  - "evento"       # Eventos: reunião, deadline, lançamento, apresentação
-  - "tarefa"       # Tarefas concretas mencionadas: "preciso fazer X", "tem que resolver Y"
+  - "evento"       # Eventos: reunião, deadline, lançamento, apresentação, release
   - "decisao"      # Decisões tomadas: "vamos usar X", "decidimos que Y"
-  - "ideia"        # Ideias ou insights: "e se fizéssemos X", "seria legal Y"
-  - "produto"      # Produtos comerciais ou internos: SaaS, API, extensão
+  - "produto"      # Produtos comerciais ou internos: SaaS, API, extensão Chrome
 
 # Configuração de importância
 importancia_config:
@@ -79,13 +127,14 @@ importancia_config:
 
   # Critérios que elevam importância
   boost_contextos:
-    "Trabalho": 0.10       # Tudo de trabalho é relevante
-    "Trabalho > Jarvis": 0.20
-    "Ideias": 0.15
+    "Trabalho": 0.10           # Tudo de trabalho é relevante
+    "Trabalho > Cerebro": 0.20  # Conteúdo central do projeto principal
+    "Ideias": 0.15             # Ideias têm alto valor como memória
+    "Decisão": 0.20            # Decisões são críticas para rastrear
 
   boost_entidades:
     projeto:
-      "Jarvis": 0.20
-      "Pinky": 0.20
-    tarefa: 0.15           # Tarefas sempre são importantes
-    decisao: 0.20          # Decisões também
+      "Cerebro": 0.20
+      "Pinky": 0.15
+      "Cerebro": 0.20
+    decisao: 0.20              # Decisões sempre são importantes

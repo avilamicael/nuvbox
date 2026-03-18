@@ -21,6 +21,7 @@ openai-whisper==20231117      # Speech-to-text model
 
 # Web framework (for Alexa webhook)
 Flask==3.0.0                  # Lightweight web framework
+Flask-CORS==4.0.0             # CORS support for API requests
 
 # AI Processing (Module 4)
 openai>=1.52.0                # OpenAI API client (>=1.52 fix httpx proxies conflict)

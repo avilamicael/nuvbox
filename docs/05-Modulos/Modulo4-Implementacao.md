@@ -189,10 +189,10 @@ Exemplo de saída esperada:
       "idx": 0,
       "resumo": "Discussão sobre implementação do Módulo 4",
       "importance_score": 0.8,
-      "topicos": ["Trabalho > Jarvis > Backend"],
+      "topicos": ["Trabalho > Cerebro > Backend"],
       "entidades": [
         {
-          "nome": "Jarvis",
+          "nome": "Cerebro",
           "tipo": "projeto",
           "contexto": "...trecho..."
         }

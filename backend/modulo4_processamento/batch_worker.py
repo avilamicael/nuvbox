@@ -23,8 +23,54 @@ from modulo4_processamento.cost_tracker import CostTracker, CostTrackerError
 from modulo4_processamento import db_queries
 from modulo5_estruturado.entity_resolver import EntityResolver
 from modulo5_estruturado import db_queries as m5_db
+from modulo3_armazenamento.db import get_connection
 
 logger = setup_logger(__name__)
+
+
+def _apply_correcoes(pending: list, USUARIO_ID: int = 1) -> list:
+    """
+    Aplica correções de texto nas transcrições antes de enviar ao LLM.
+
+    Carrega a tabela correcoes_texto do banco e substitui todas as
+    ocorrências (case-insensitive) nas transcrições.
+
+    Args:
+        pending: Lista de dicts com campo 'texto' (transcrições brutas)
+        USUARIO_ID: ID do usuário para filtrar correções
+
+    Returns:
+        Lista de transcrições com correções aplicadas
+    """
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT texto_errado, texto_correto FROM correcoes_texto WHERE usuario_id = %s",
+            (USUARIO_ID,),
+        )
+        correcoes = cursor.fetchall()
+
+    if not correcoes:
+        return pending
+
+    corrigidos = 0
+    result = []
+    for item in pending:
+        texto = item.get("texto", "") or ""
+        original = texto
+        for errado, correto in correcoes:
+            # Case-insensitive replacement preserving dict structure
+            import re
+            texto = re.sub(re.escape(errado), correto, texto, flags=re.IGNORECASE)
+        if texto != original:
+            corrigidos += 1
+            item = dict(item, texto=texto)
+        result.append(item)
+
+    if corrigidos:
+        logger.info(f"✏️ Correções aplicadas em {corrigidos}/{len(pending)} transcrições")
+
+    return result
 
 
 class BatchWorkerError(Exception):
@@ -113,6 +159,13 @@ class BatchWorker(threading.Thread):
                 )
             except m5_db.M5DBQueriesError as e:
                 logger.warning(f"⚠️  Could not load entity/topic context: {e}")
+
+            # Apply text corrections before sending to LLM
+            # (fixes Whisper transcription errors: "prômitos" → "prompts")
+            try:
+                pending = _apply_correcoes(pending, USUARIO_ID=1)
+            except Exception as e:
+                logger.warning(f"⚠️  Could not apply text corrections: {e}")
 
             # Build prompts with entity/topic context
             system_prompt = self.prompt_builder.build_system_prompt(
@@ -284,12 +337,8 @@ class BatchWorker(threading.Thread):
             resolve_result = resolver.resolve(ent["nome"], ent["tipo"])
 
             if resolve_result.entidade_id and resolve_result.status in ("ativo", "pendente"):
-                # Reutilize existing entity — update its frequency
-                entidade_id = db_queries.upsert_entidade(
-                    resolve_result.matched_nome,
-                    resolve_result.matched_nome.lower(),
-                    ent["tipo"],
-                )
+                # Reutilize existing entity (identified by resolver)
+                entidade_id = resolve_result.entidade_id
                 # Mark as pendente if fuzzy match (needs human review)
                 if resolve_result.status == "pendente":
                     try:

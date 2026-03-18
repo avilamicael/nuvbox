@@ -28,6 +28,7 @@ from modulo1_input import create_alexa_app
 from modulo3_armazenamento import StorageWorker, initialize_pool, close_pool
 from modulo4_processamento import BatchWorker
 from modulo6_consulta import register_consulta_routes
+from modulo6_consulta.channels.dados import register_dados_routes
 
 logger = setup_logger(__name__)
 
@@ -71,6 +72,7 @@ def main():
         logger.info("Starting Flask app...")
         flask_app = create_alexa_app(text_queue)
         register_consulta_routes(flask_app)
+        register_dados_routes(flask_app)
 
         def run_flask():
             try:
@@ -92,6 +94,7 @@ def main():
         logger.info(f"  🌐 Webhook: POST http://localhost:{settings.flask.port}/webhook/text")
         logger.info(f"  🌐 Alexa:   POST http://localhost:{settings.flask.port}/webhook/alexa")
         logger.info(f"  🔍 Consulta: POST http://localhost:{settings.flask.port}/consulta")
+        logger.info(f"  ✏️  Curadoria: GET/PATCH http://localhost:{settings.flask.port}/dados/*")
         logger.info("  📊 Database: storing transcriptions")
         logger.info("  🤖 AI Processing: Module 4 (BatchWorker)")
         logger.info("  🧠 Query Interface: Module 6 (natural language search)")

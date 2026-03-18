@@ -191,7 +191,7 @@ CREATE UNIQUE INDEX idx_entidades_tipo_normalizado
 ```sql
 INSERT INTO entidades VALUES
   (1, 'PostgreSQL', 'postgresql', 'ferramenta', 5, NOW(), NOW(), NOW()),
-  (2, 'Jarvis', 'jarvis', 'projeto', 20, NOW(), NOW(), NOW()),
+  (2, 'Cerebro', 'Cerebro', 'projeto', 20, NOW(), NOW(), NOW()),
   (3, 'João Silva', 'joão silva', 'pessoa', 3, NOW(), NOW(), NOW());
 ```
 
@@ -212,12 +212,12 @@ INSERT INTO entidades VALUES ...
 
 ## 🆕 Tabela: topicos (Hierarquia)
 
-**Propósito**: Organização em árvore (ex: "Trabalho > Jarvis > Bugs")
+**Propósito**: Organização em árvore (ex: "Trabalho > Cerebro > Bugs")
 
 **Diagrama**:
 ```
 Trabalho (id=1, nivel=1, pai_id=NULL)
-  └── Jarvis (id=2, nivel=2, pai_id=1)
+  └── Cerebro (id=2, nivel=2, pai_id=1)
        ├── Bugs (id=3, nivel=3, pai_id=2)
        └── Deploy (id=4, nivel=3, pai_id=2)
 
@@ -247,7 +247,7 @@ CREATE INDEX idx_topicos_pai_id
 | Coluna | Tipo | Descrição | Exemplo |
 |--------|------|-----------|---------|
 | `nome` | VARCHAR(255) | Parte final | "Bugs" |
-| `caminho` | TEXT | Path completo | "Trabalho > Jarvis > Bugs" |
+| `caminho` | TEXT | Path completo | "Trabalho > Cerebro > Bugs" |
 | `nivel` | INTEGER | Profundidade | 1 (root), 2, 3... |
 | `pai_id` | BIGINT | Self FK | id do tópico pai |
 | `frequencia` | INTEGER | Contagem | Quantas vezes mencionado |
@@ -256,8 +256,8 @@ CREATE INDEX idx_topicos_pai_id
 ```sql
 INSERT INTO topicos (nome, caminho, nivel, pai_id) VALUES
   ('Trabalho', 'Trabalho', 1, NULL),
-  ('Jarvis', 'Trabalho > Jarvis', 2, 1),
-  ('Bugs', 'Trabalho > Jarvis > Bugs', 3, 2);
+  ('Cerebro', 'Trabalho > Cerebro', 2, 1),
+  ('Bugs', 'Trabalho > Cerebro > Bugs', 3, 2);
 ```
 
 **Queries Úteis**:
@@ -265,8 +265,8 @@ INSERT INTO topicos (nome, caminho, nivel, pai_id) VALUES
 -- Árvore completa
 SELECT * FROM topicos WHERE nivel = 1 ORDER BY nome;
 
--- Subtópicos de "Jarvis"
-SELECT * FROM topicos WHERE caminho LIKE 'Trabalho > Jarvis%';
+-- Subtópicos de "Cerebro"
+SELECT * FROM topicos WHERE caminho LIKE 'Trabalho > Cerebro%';
 
 -- Tópicos mais frequentes
 SELECT caminho, frequencia FROM topicos ORDER BY frequencia DESC;
@@ -313,7 +313,7 @@ CREATE UNIQUE INDEX idx_fragmento_entidade_unique
 ```sql
 INSERT INTO fragmento_entidade VALUES
   (1, 42, 1, 'bugs no PostgreSQL', 'meio'),
-  (2, 42, 2, 'reunião com o time do Jarvis', 'inicio');
+  (2, 42, 2, 'reunião com o time do Cerebro', 'inicio');
 ```
 
 **Por quê `UNIQUE(fragmento_id, entidade_id)`?**
@@ -348,8 +348,8 @@ CREATE UNIQUE INDEX idx_fragmento_topico_unique
 **Exemplo**:
 ```sql
 INSERT INTO fragmento_topico VALUES
-  (1, 42, 2, 1.0, true),   -- Trabalho > Jarvis > Bugs (principal)
-  (2, 42, 3, 0.7, false);  -- Trabalho > Jarvis > Deploy (secundário)
+  (1, 42, 2, 1.0, true),   -- Trabalho > Cerebro > Bugs (principal)
+  (2, 42, 3, 0.7, false);  -- Trabalho > Cerebro > Deploy (secundário)
 ```
 
 ---
@@ -361,10 +361,10 @@ INSERT INTO fragmento_topico VALUES
 **Diagrama**:
 ```
 João Silva (pessoa)
-    ├── trabalha_para → Jarvis (projeto)
+    ├── trabalha_para → Cerebro (projeto)
     └── amigo_de → Maria Silva (pessoa)
 
-Jarvis (projeto)
+Cerebro (projeto)
     ├── usa → PostgreSQL (ferramenta)
     └── usa → Python (ferramenta)
 ```
@@ -393,8 +393,8 @@ CREATE UNIQUE INDEX idx_entidade_entidade_unique
 **Exemplo**:
 ```sql
 INSERT INTO entidade_entidade VALUES
-  (1, 3, 2, 'trabalha_para', 1.0, 5),  -- João trabalha para Jarvis
-  (2, 2, 1, 'usa', 0.95, 3);            -- Jarvis usa PostgreSQL
+  (1, 3, 2, 'trabalha_para', 1.0, 5),  -- João trabalha para Cerebro
+  (2, 2, 1, 'usa', 0.95, 3);            -- Cerebro usa PostgreSQL
 ```
 
 **Future Use** (Módulo 7):
@@ -403,7 +403,7 @@ INSERT INTO entidade_entidade VALUES
 SELECT e2.nome FROM entidade_entidade
   WHERE entidade1_id = 3 AND tipo_relacao = 'trabalha_para';
 
-# Buscar "Quem trabalha para Jarvis?"
+# Buscar "Quem trabalha para Cerebro?"
 SELECT e1.nome FROM entidade_entidade
   WHERE entidade2_id = 2 AND tipo_relacao = 'trabalha_para';
 ```
@@ -527,14 +527,14 @@ ORDER BY processado_em DESC LIMIT 20;
 ### Exploração de Dados
 
 ```sql
--- Entidades mencionadas em tópico "Jarvis"
+-- Entidades mencionadas em tópico "Cerebro"
 SELECT DISTINCT e.nome, e.tipo, COUNT(*) as vezes
 FROM entidades e
 JOIN fragmento_entidade fe ON e.id = fe.entidade_id
 JOIN fragmentos f ON fe.fragmento_id = f.id
 JOIN fragmento_topico ft ON f.id = ft.fragmento_id
 JOIN topicos t ON ft.topico_id = t.id
-WHERE t.caminho LIKE 'Trabalho > Jarvis%'
+WHERE t.caminho LIKE 'Trabalho > Cerebro%'
 GROUP BY e.id, e.nome, e.tipo
 ORDER BY vezes DESC;
 
@@ -542,7 +542,7 @@ ORDER BY vezes DESC;
 SELECT e2.nome, e2.tipo, ee.tipo_relacao, ee.confianca
 FROM entidade_entidade ee
 JOIN entidades e2 ON ee.entidade2_id = e2.id
-WHERE ee.entidade1_id = (SELECT id FROM entidades WHERE nome = 'Jarvis')
+WHERE ee.entidade1_id = (SELECT id FROM entidades WHERE nome = 'Cerebro')
 ORDER BY ee.confianca DESC;
 ```
 

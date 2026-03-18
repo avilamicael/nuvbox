@@ -57,6 +57,14 @@ PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB
 }
 echo "✅ Module 5 schema migration applied!"
 
+# Apply Module 6 schema migration (correcoes_texto table)
+echo "📊 Applying Module 6 schema migration..."
+PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -f /app/modulo6_consulta/schema_migration.sql || {
+    echo "❌ Failed to apply Module 6 schema migration"
+    exit 1
+}
+echo "✅ Module 6 schema migration applied!"
+
 # Start the backend
 echo "🎙️  Starting Cerebro backend..."
 exec python /app/main.py

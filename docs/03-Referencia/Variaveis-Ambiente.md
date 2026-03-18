@@ -146,17 +146,34 @@ O script lê estas variáveis automaticamente do `.env` — não é necessário 
 
 ## 🌐 Flask/Alexa
 
-### `ALEXA_WEBHOOK_SECRET`
+### `CEREBRO_SECRET` (ou `ALEXA_WEBHOOK_SECRET`)
 - **Tipo**: string
 - **Padrão**: `change_me_before_ngrok`
-- **Descrição**: Secret para validação de webhook Alexa
+- **Descrição**: Secret para validação de webhooks (texto, Alexa, consulta)
 - **⚠️ Segurança**: MUDE ANTES DE EXPOR!
+- **Header**: `X-Cerebro-Secret` (aceita também `X-Cerebro-Secret` para compatibilidade)
 - **Como usar**:
   ```bash
-  curl -X POST http://localhost:5001/webhook/alexa \
-    -H "X-Alexa-Secret: sua_chave_aqui" \
-    -d '{"text":"teste",...}'
+  curl -X POST http://localhost:5001/webhook/text \
+    -H "X-Cerebro-Secret: sua_chave_aqui" \
+    -H "Content-Type: application/json" \
+    -d '{"text":"teste"}'
   ```
+
+## 🤖 Módulo 6 — Query Interface
+
+### `MODULO6_MAX_ROUNDS`
+- **Tipo**: número
+- **Padrão**: `5`
+- **Descrição**: Máximo de rodadas do agentic loop (pergunta → LLM → tool → resultado → síntese)
+- **Intervalo**: 1-10 recomendado
+- **Nota**: Mais rodadas = mais chances de refinar, mas mais chamadas LLM
+
+### `MODULO6_MAX_FRAGMENTOS`
+- **Tipo**: número
+- **Padrão**: `20`
+- **Descrição**: Limite de fragmentos retornados por ferramenta de busca
+- **Nota**: Reduz contexto para a LLM se houver muitos resultados
 
 ## 📝 Logging
 

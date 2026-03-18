@@ -128,8 +128,13 @@ docker-compose up -d     # Iniciar
 - **Versão**: 1.0
 - **Status**: 🟢 Pronto para Produção
 - **Idioma**: Português Brasil
-- **Data**: 17 de Março de 2026
-- **Próximo**: Módulos 4-7 (IA, Grafo, Query, Semântica)
+- **Data**: 18 de Março de 2026
+- **Módulos Implementados**:
+  - ✅ Módulo 1-3 (Input, Transcrição, Armazenamento)
+  - ✅ Módulo 4 (IA — Batch processing com LLM)
+  - ✅ Módulo 5 (Estruturado — Entidades, Tópicos, Action Items)
+  - ✅ Módulo 6 (Consulta — Query agent com tool calling)
+- **Próximo**: Módulo 7 (Semântica — Embeddings + similarity search); Curadoria de Dados
 
 ---
 

@@ -13,7 +13,7 @@ aliases:
 O Módulo 4 transforma transcrições brutas em **memória estruturada e consultável**. Para cada transcrição, extrai:
 - **Resumo**: 1-2 frases capturando a essência
 - **Importance Score**: 0.0-1.0 indicando relevância
-- **Tópicos**: Hierarquia (ex: "Trabalho > Jarvis > Bugs")
+- **Tópicos**: Hierarquia (ex: "Trabalho > Cerebro > Bugs")
 - **Entidades**: Pessoas, empresas, projetos, lugares, conceitos
 
 ---
@@ -26,7 +26,7 @@ O Módulo 4 transforma transcrições brutas em **memória estruturada e consult
 │                                                      │
 │  transcricoes (status='pending')                     │
 │    ├── id: 1001                                      │
-│    ├── texto: "Reunião do Jarvis sobre bugs..."     │
+│    ├── texto: "Reunião do Cerebro sobre bugs..."     │
 │    └── status: 'pending'                             │
 └──────────────────┬───────────────────────────────────┘
                    │ (Polling a cada 3 min)
@@ -48,7 +48,7 @@ O Módulo 4 transforma transcrições brutas em **memória estruturada e consult
 │                                                      │
 │  fragmentos (resumos + importance)                   │
 │  entidades (pessoa, empresa, projeto, conceito)      │
-│  topicos (hierarquia: Trabalho > Jarvis > Bugs)     │
+│  topicos (hierarquia: Trabalho > Cerebro > Bugs)     │
 │  fragmento_entidade (N:N com contexto)               │
 │  fragmento_topico (N:N com confiança)                │
 │  entidade_entidade (grafo de relacionamentos)        │
@@ -75,14 +75,14 @@ transcricoes.status:
 ```
 
 **Exemplo**:
-1. Usuário fala: "Reunião do Jarvis sobre bugs no PostgreSQL"
+1. Usuário fala: "Reunião do Cerebro sobre bugs no PostgreSQL"
 2. Módulo 2 salva em `transcricoes` com `status='pending'`
 3. BatchWorker polling detecta novo registro
 4. GPT-4o mini extrai:
    - Resumo: "Reunião com time para discutir bugs no PostgreSQL"
    - Importance: 0.85 (alto - relacionado a projeto principal)
-   - Tópicos: ["Trabalho > Jarvis > Bugs"]
-   - Entidades: [PostgreSQL (ferramenta), Jarvis (projeto)]
+   - Tópicos: ["Trabalho > Cerebro > Bugs"]
+   - Entidades: [PostgreSQL (ferramenta), Cerebro (projeto)]
 5. BatchWorker insere em `fragmentos`, `entidades`, `topicos`, links
 6. Atualiza `transcricoes.status = 'processed'`
 
@@ -123,7 +123,7 @@ contextos:
   trabalho:
     descricao: "Projetos de software, desenvolvimento"
     palavras_chave:
-      - "Jarvis"
+      - "Cerebro"
       - "código"
       - "bug"
 
@@ -175,7 +175,7 @@ entidade_tipos:
     {
       "idx": 0,
       "id": 1001,
-      "texto": "Hoje tive reunião com time do Jarvis para discutir bugs..."
+      "texto": "Hoje tive reunião com time do Cerebro para discutir bugs..."
     },
     {
       "idx": 1,
@@ -193,11 +193,11 @@ entidade_tipos:
   "resultados": [
     {
       "idx": 0,
-      "resumo": "Reunião com team Jarvis para discussão de bugs críticos.",
+      "resumo": "Reunião com team Cerebro para discussão de bugs críticos.",
       "importance_score": 0.85,
       "topicos": [
-        "Trabalho > Jarvis > Bugs",
-        "Trabalho > Jarvis > Deploy"
+        "Trabalho > Cerebro > Bugs",
+        "Trabalho > Cerebro > Deploy"
       ],
       "entidades": [
         {
@@ -206,9 +206,9 @@ entidade_tipos:
           "contexto": "bugs no PostgreSQL"
         },
         {
-          "nome": "Jarvis",
+          "nome": "Cerebro",
           "tipo": "projeto",
-          "contexto": "reunião com o time do Jarvis"
+          "contexto": "reunião com o time do Cerebro"
         }
       ]
     },
@@ -275,7 +275,7 @@ UNIQUE(tipo, nome_normalizado);  -- Deduplication by type + name
 CREATE TABLE topicos (
     id          BIGSERIAL PRIMARY KEY,
     nome        VARCHAR(255),               -- e.g., 'Bugs'
-    caminho     TEXT NOT NULL UNIQUE,       -- e.g., 'Trabalho > Jarvis > Bugs'
+    caminho     TEXT NOT NULL UNIQUE,       -- e.g., 'Trabalho > Cerebro > Bugs'
     nivel       INTEGER NOT NULL,           -- 1=root, 2=child, etc.
     pai_id      BIGINT REFERENCES topicos,  -- Self-FK para hierarquia
     frequencia  INTEGER NOT NULL DEFAULT 1

@@ -17,12 +17,12 @@ _LIMIT = settings.modulo6.max_fragmentos_por_ferramenta
     name="buscar_por_topico",
     description=(
         "Busca fragmentos de memória relacionados a um tópico específico. "
-        "Use quando o usuário menciona um assunto, área ou tema (ex: 'Jarvis', 'trabalho', 'saúde')."
+        "Use quando o usuário menciona um assunto, área ou tema (ex: 'Cerebro', 'trabalho', 'saúde')."
     ),
     parameters={
         "topico": {
             "type": "string",
-            "description": "Nome ou parte do caminho do tópico a buscar (ex: 'Jarvis', 'Trabalho > Reuniões')",
+            "description": "Nome ou parte do caminho do tópico a buscar (ex: 'Cerebro', 'Trabalho > Reuniões')",
         }
     },
 )

@@ -116,7 +116,7 @@ CREATE INDEX IF NOT EXISTS idx_topicos_status ON topicos(status);
 |---|---|---|
 | id | BIGSERIAL PK | — |
 | nome | VARCHAR(200) | Último nível do caminho |
-| caminho | TEXT UNIQUE | ex: "Trabalho > Jarvis > Bug" |
+| caminho | TEXT UNIQUE | ex: "Trabalho > Cerebro > Bug" |
 | nivel | INTEGER | Profundidade hierárquica |
 | pai_id | BIGINT FK | Self-referencial |
 | frequencia | INTEGER | Contagem de menções |

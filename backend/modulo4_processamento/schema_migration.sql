@@ -83,14 +83,14 @@ CREATE INDEX IF NOT EXISTS idx_entidades_frequencia
 
 -- ============================================================================
 -- TABLE: topicos (Hierarchical)
--- e.g., "Trabalho > Jarvis > Bugs"
+-- e.g., "Trabalho > Cerebro > Bugs"
 -- ============================================================================
 
 CREATE TABLE IF NOT EXISTS topicos (
     id          BIGSERIAL PRIMARY KEY,
 
     nome        VARCHAR(255) NOT NULL,     -- e.g., 'Bugs'
-    caminho     TEXT NOT NULL,             -- e.g., 'Trabalho > Jarvis > Bugs'
+    caminho     TEXT NOT NULL,             -- e.g., 'Trabalho > Cerebro > Bugs'
     nivel       INTEGER NOT NULL,          -- 1 = root, 2 = child, etc.
 
     pai_id      BIGINT REFERENCES topicos(id) ON DELETE SET NULL,

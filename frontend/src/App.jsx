@@ -2,8 +2,11 @@ import { useState } from "react";
 import { initialChecked, checklistData } from "./data/checklist";
 import Header from "./components/Header";
 import Section from "./components/Section";
+import RevisaoScreen from "./components/revisao/RevisaoScreen";
+import ConsultaScreen from "./components/ConsultaScreen";
 
 export default function CerebroChecklist() {
+  const [screen, setScreen] = useState("checklist"); // "checklist" | "revisao" | "consulta"
   const [checked, setChecked] = useState(() => {
     const saved = localStorage.getItem('cerebroChecked');
     return saved ? JSON.parse(saved) : initialChecked;
@@ -38,6 +41,13 @@ export default function CerebroChecklist() {
   const checkedCount = Object.values(checked).filter(Boolean).length;
   const progress = Math.round((checkedCount / totalItems) * 100);
 
+  if (screen === "consulta") {
+    return <ConsultaScreen />;
+  }
+  if (screen === "revisao") {
+    return <RevisaoScreen />;
+  }
+
   return (
     <div style={{
       background: "#0D1117",
@@ -52,6 +62,8 @@ export default function CerebroChecklist() {
         totalItems={totalItems}
         filter={filter}
         setFilter={setFilter}
+        screen={screen}
+        setScreen={setScreen}
       />
 
       <div style={{ maxWidth: 900, margin: "0 auto", padding: "24px 16px 80px" }}>

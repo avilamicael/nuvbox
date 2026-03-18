@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from queue import Queue
 from datetime import datetime
 from modulo3_armazenamento.storage_worker import TextItem
@@ -20,6 +21,9 @@ def create_alexa_app(text_queue: Queue) -> Flask:
         Flask application instance
     """
     app = Flask(__name__)
+
+    # Enable CORS for all routes (needed for frontend at localhost:5173/5174)
+    CORS(app, resources={r"/*": {"origins": "*"}})
 
     @app.route("/health", methods=["GET"])
     def health():

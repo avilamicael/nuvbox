@@ -2,7 +2,7 @@
 Query Agent — Módulo 6.
 
 Recebe uma pergunta em linguagem natural e usa tool calling para buscar
-no banco de dados do Jarvis, sintetizando uma resposta em PT-BR.
+no banco de dados do Cerebro, sintetizando uma resposta em PT-BR.
 """
 
 import json
@@ -20,7 +20,7 @@ logger = setup_logger(__name__)
 MAX_ROUNDS = settings.modulo6.max_rounds
 
 SYSTEM_PROMPT = """\
-Você é o Jarvis, um assistente de segunda memória pessoal.
+Você é o Cerebro, um assistente de segunda memória pessoal.
 Você tem acesso às memórias do usuário através de ferramentas de busca no banco de dados.
 
 Instruções:

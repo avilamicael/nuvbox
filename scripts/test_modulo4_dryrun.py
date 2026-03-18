@@ -61,7 +61,7 @@ def main():
     sample_transcricoes = [
         {
             "id": 1001,
-            "texto": "Hoje tive uma reunião com o time do Jarvis para discutir os bugs no PostgreSQL. "
+            "texto": "Hoje tive uma reunião com o time do Cerebro para discutir os bugs no PostgreSQL. "
                      "Precisamos refatorar o módulo de armazenamento antes do deploy na próxima semana."
         },
         {
@@ -96,7 +96,7 @@ def main():
                 "idx": 0,
                 "resumo": "Reunião com time para discutir bugs no PostgreSQL antes do deploy.",
                 "importance_score": 0.85,
-                "topicos": ["Trabalho > Jarvis > Bugs", "Trabalho > Jarvis > Deploy"],
+                "topicos": ["Trabalho > Cerebro > Bugs", "Trabalho > Cerebro > Deploy"],
                 "entidades": [
                     {
                         "nome": "PostgreSQL",
@@ -104,9 +104,9 @@ def main():
                         "contexto": "bugs no PostgreSQL"
                     },
                     {
-                        "nome": "Jarvis",
+                        "nome": "Cerebro",
                         "tipo": "projeto",
-                        "contexto": "reunião com o time do Jarvis"
+                        "contexto": "reunião com o time do Cerebro"
                     }
                 ]
             },

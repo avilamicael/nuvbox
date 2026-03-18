@@ -1,4 +1,4 @@
-.PHONY: help up down logs lint test clean reset webhook-test db-recent db-size db-debug db-full
+.PHONY: help up down logs lint test clean reset webhook-test db-recent db-size db-debug db-full db-reset db-nuke
 
 help:
 	@echo "Cerebro Backend - Development Commands"
@@ -24,8 +24,9 @@ help:
 	@echo ""
 	@echo "🧹 LIMPEZA:"
 	@echo "  make clean           - Remove logs"
-	@echo "  make db-reset        - Clear all data"
-	@echo "  make reset           - Full reset"
+	@echo "  make db-reset        - Trunca todos os dados (schema preservado)"
+	@echo "  make db-nuke         - Apaga ./data/postgres/ fisicamente (reset total)"
+	@echo "  make reset           - Para containers + remove volumes nomeados"
 	@echo ""
 
 up:
@@ -81,11 +82,18 @@ db-size:
 		"SELECT pg_size_pretty(pg_database_size('cerebro_db')) as tamanho;"
 
 db-reset:
-	@echo "⚠️  Resetting database (ALL DATA WILL BE DELETED)"
+	@echo "⚠️  Resetting ALL data (transcricoes, fragmentos, entidades, topicos, action_items, correcoes)"
 	@read -p "Are you sure? (type 'yes'): " confirm && [ "$$confirm" = "yes" ] && \
 	docker-compose exec -T postgres psql -U cerebro -d cerebro_db -c \
-		"TRUNCATE transcricoes CASCADE;" && \
-	echo "✅ Database reset"
+		"TRUNCATE correcoes_texto, action_items, fragmento_topico, fragmento_entidade, entidade_entidade, fragmentos, entidades, topicos, modulo4_uso_diario, transcricoes RESTART IDENTITY CASCADE;" && \
+	echo "✅ All data cleared (schema preserved)"
+
+db-nuke:
+	@echo "💥 NUKE: Para containers, apaga ./data/postgres/ e reinicia do zero"
+	@read -p "Isso apaga TODO o banco fisicamente. Digite 'nuke' para confirmar: " confirm && [ "$$confirm" = "nuke" ] && \
+	docker-compose down && \
+	rm -rf ./data/postgres/ && \
+	echo "✅ Dados apagados. Rode 'make up' para recriar o banco do zero."
 
 db-backup:
 	@echo "Backing up database..."

@@ -5,6 +5,28 @@ description: Histórico de mudanças estruturais e features implementadas
 
 # Changelog — Backend Cerebro (Março 2026)
 
+## [Modulo 6] ✅ 18/03/2026
+
+### Adicionado
+- **Módulo 6** (`backend/modulo6_consulta/`): Interface de consulta com agentic loop + tool calling
+- **Tool Registry** (`registry.py`): Decorator `@register_tool()`, `get_all_tools()`, `dispatch(nome, args, usuario_id)`
+- **Query Agent** (`query_agent.py`): Agentic loop até `MAX_ROUNDS=5` com recuperação de ferramentas iterativa
+- **6 Ferramentas implementadas**:
+  - `buscar_por_topico(topico, usuario_id)` — fragmentos por tópico hierárquico
+  - `listar_topicos(usuario_id)` — lista tópicos disponíveis
+  - `buscar_por_entidade(nome, tipo, usuario_id)` — fragmentos mencionando entidade
+  - `buscar_por_periodo(data_inicio, data_fim, usuario_id)` — fragmentos num intervalo
+  - `listar_action_items(status, usuario_id)` — tarefas pendentes/concluídas
+  - `buscar_texto_livre(termo, usuario_id)` — ILIKE em resumo e palavras-chave
+- **Canal Web** (`channels/web.py`): `POST /consulta` com autenticação `X-Cerebro-Secret`
+- **OpenAI Client** (`modulo4_processamento/openai_client.py`): Novo método `chat_with_tools(messages, tools)` para function calling
+- **Config** (`config.py`): `Modulo6Settings` com `max_rounds` e `max_fragmentos_por_ferramenta`
+
+### Schema
+- Sem mudanças — reutiliza M5 (fragmentos, entidades, topicos, action_items)
+
+---
+
 ## [Modulo 5] ✅ 18/03/2026
 
 ### Adicionado
@@ -78,11 +100,11 @@ description: Histórico de mudanças estruturais e features implementadas
 ## [Pinky App] ✅ 18/03/2026
 
 ### Alterado
-- **http-sender.ts**: Header `X-Jarvis-Secret` → `X-Cerebro-Secret`
-- **SettingsForm.tsx**: Label "Secret (X-Jarvis-Secret)" → "Secret (X-Cerebro-Secret)"
+- **http-sender.ts**: Header `X-Cerebro-Secret` → `X-Cerebro-Secret`
+- **SettingsForm.tsx**: Label "Secret (X-Cerebro-Secret)" → "Secret (X-Cerebro-Secret)"
 
 ### Mantido para compatibilidade
-- **backend/modulo1_input/text_webhook.py**: Aceita ambos `X-Jarvis-Secret` e `X-Cerebro-Secret` (fallback)
+- **backend/modulo1_input/text_webhook.py**: Aceita ambos `X-Cerebro-Secret` e `X-Cerebro-Secret` (fallback)
 
 ---
 

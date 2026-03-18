@@ -23,7 +23,7 @@ _LIMIT = settings.modulo6.max_fragmentos_por_ferramenta
     parameters={
         "nome": {
             "type": "string",
-            "description": "Nome (ou parte do nome) da entidade a buscar (ex: 'João', 'Anthropic', 'Jarvis')",
+            "description": "Nome (ou parte do nome) da entidade a buscar (ex: 'João', 'Anthropic', 'Cerebro')",
         }
     },
 )

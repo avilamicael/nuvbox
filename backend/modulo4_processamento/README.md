@@ -124,7 +124,7 @@ while not is_shutdown_requested():
 {
   "quantidade": 3,
   "transcricoes": [
-    {"idx": 0, "id": 1001, "texto": "Reunião do Jarvis..."},
+    {"idx": 0, "id": 1001, "texto": "Reunião do Cerebro..."},
     {"idx": 1, "id": 1002, "texto": "Fui ao médico..."},
     {"idx": 2, "id": 1003, "texto": "Aprendi machine learning..."}
   ]
@@ -179,7 +179,7 @@ Funções principais:
 **Novas Tabelas**:
 - `fragmentos` — Resumos + importance scores
 - `entidades` — Pessoas, empresas, projetos, conceitos
-- `topicos` — Hierarquia (ex: "Trabalho > Jarvis > Bugs")
+- `topicos` — Hierarquia (ex: "Trabalho > Cerebro > Bugs")
 - `fragmento_entidade` — N:M com contexto
 - `fragmento_topico` — N:M com confiança
 - `entidade_entidade` — Grafo de relacionamentos
@@ -195,7 +195,7 @@ usuario:
 
 contextos:
   trabalho:
-    palavras_chave: ["Jarvis", "código", "bug", ...]
+    palavras_chave: ["Cerebro", "código", "bug", ...]
 
 entidade_tipos:
   - "pessoa"

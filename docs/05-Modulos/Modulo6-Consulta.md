@@ -10,7 +10,9 @@ aliases:
 
 # 🔍 Módulo 6 — Interface de Consulta
 
-O Módulo 6 é a camada que permite ao usuário **recuperar memória** do sistema Jarvis via linguagem natural. Ele conecta os dados estruturados do [[Modulo5-Estruturado|M5]] e os embeddings do [[Modulo7-Semantico|M7]] a qualquer interface de entrada — web, WhatsApp, Alexa, ou o que vier depois.
+**Status: ✅ Implementado em 18/03/2026**
+
+O Módulo 6 é a camada que permite ao usuário **recuperar memória** do sistema Cerebro via linguagem natural. Ele conecta os dados estruturados do [[Modulo5-Estruturado|M5]] e os embeddings do [[Modulo7-Semantico|M7]] a qualquer interface de entrada — web, WhatsApp, Alexa, ou o que vier depois.
 
 **Dois princípios de design:**
 1. **Canal-agnóstico**: o core não sabe se a pergunta veio do WhatsApp ou da Alexa
@@ -130,7 +132,7 @@ def dispatch(nome: str, args: dict, usuario_id: int) -> any:
     parameters={
         "topico": {
             "type": "string",
-            "description": "O tópico a buscar, ex: 'Trabalho > Jarvis'"
+            "description": "O tópico a buscar, ex: 'Trabalho > Cerebro'"
         }
     }
 )
@@ -192,8 +194,9 @@ Cada canal tem responsabilidade única: **traduzir o mundo externo para QueryReq
 ### web.py (MVP)
 ```
 POST /consulta
+  Headers: X-Cerebro-Secret (required)
   Body: { "pergunta": "o que ficou pendente da reunião de terça?" }
-  Response: { "resposta": "...", "fragmentos": [...] }
+  Response: { "resposta": "...", "fragmentos": [...], "ferramentas_usadas": [...] }
 ```
 Monta `QueryRequest`, chama `query_agent.run()`, serializa `QueryResponse` para JSON.
 
@@ -298,12 +301,12 @@ Rodada 1:
 Rodada 2 (execução):
   dispatch("listar_action_items", {"status": "pendente"}, usuario_id=1)
   → SELECT action_items WHERE status='pendente' AND usuario_id=1
-  → [{"texto": "Revisar PR do Jarvis", "criado_em": "2026-03-15"}, ...]
+  → [{"texto": "Revisar PR do Cerebro", "criado_em": "2026-03-15"}, ...]
 
 Rodada 3 (síntese):
   LLM recebe os resultados
   LLM responde: "Você tem 3 itens pendentes da semana passada:
-    1. Revisar PR do Jarvis (criado em 15/03)
+    1. Revisar PR do Cerebro (criado em 15/03)
     ..."
 
 QueryResponse(
@@ -318,16 +321,18 @@ QueryResponse(
 ## ⚙️ Variáveis de Ambiente
 
 ```bash
-MODULO6_MAX_ROUNDS=5          # Máximo de rodadas do agentic loop
-MODULO6_MODEL=gpt-4o-mini     # Modelo para síntese (pode ser diferente do M4)
-MODULO6_MAX_FRAGMENTOS=20     # Limite de fragmentos retornados por ferramenta
+MODULO6_MAX_ROUNDS=5          # Máximo de rodadas do agentic loop (default: 5)
+MODULO6_MAX_FRAGMENTOS=20     # Limite de fragmentos retornados por ferramenta (default: 20)
 ```
+
+**Nota**: O modelo de LLM usado é o mesmo do Módulo 4 (definido via `LLM_MODEL` e `LLM_BASE_URL`).
 
 ---
 
 ## 🚀 Próximas Etapas
 
-- **MVP**: Implementar `registry.py` + `query_agent.py` + ferramentas M5 + `channels/web.py`
+- **✅ MVP Concluído**: `registry.py` + `query_agent.py` + ferramentas M5 + `channels/web.py`
+- **Curadoria de Dados**: Interface web para corrigir entidades, tópicos, fragmentos e action items antes da indexação M7
 - **M7**: Adicionar `tools/semantica.py` com `buscar_semanticamente` via pgvector
 - **Futuro**: `channels/whatsapp.py` (Twilio ou Meta Cloud API)
 - **Futuro**: `channels/alexa.py` (AWS Lambda + Alexa Skills Kit)

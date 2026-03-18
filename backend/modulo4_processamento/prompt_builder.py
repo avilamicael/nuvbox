@@ -51,7 +51,7 @@ class PromptBuilder:
         entity_context_str = self.build_entity_context(existing_entities or [])
         topic_context_str = self.build_topic_context(existing_topics or [])
 
-        return f"""Você é um assistente especializado em extrair informações ricas e detalhadas de transcrições de áudio do sistema Jarvis.
+        return f"""Você é um assistente especializado em extrair informações ricas e detalhadas de transcrições de áudio do sistema Cerebro.
 
 # PERFIL DO USUÁRIO
 - Nome: {nome}
@@ -70,7 +70,7 @@ Você receberá um JSON com um array de transcrições de áudio. Para cada tran
 ## 1. Resumo
 - 1 a 3 frases capturando a essência completa
 - Seja específico: mencione nomes, projetos, tecnologias se aparecerem
-- Não generalize ("falou sobre trabalho") — detalhe ("discutiu bug de autenticação no Jarvis com token expirado")
+- Não generalize ("falou sobre trabalho") — detalhe ("discutiu bug de autenticação no Cerebro com token expirado")
 
 ## 2. Importance Score (0.00 a 1.00)
 - 0.00–0.24: Trivial — saudações, ruído, frases sem conteúdo ("tá", "ah é", "ok")
@@ -82,7 +82,7 @@ Você receberá um JSON com um array de transcrições de áudio. Para cada tran
 - Formato hierárquico: "Categoria > Subcategoria > Detalhe"
 - Crie tópicos novos livremente se o conteúdo exigir — não se limite aos exemplos
 - Use quantos tópicos forem necessários para cobrir o conteúdo
-- Seja específico: prefira "Trabalho > Jarvis > Bug > Autenticação" a "Trabalho"
+- Seja específico: prefira "Trabalho > Cerebro > Bug > Autenticação" a "Trabalho"
 
 ## 4. Entidades
 Extraia TODAS as entidades mencionadas. Para cada uma:
@@ -116,17 +116,17 @@ Extraia TODAS as entidades mencionadas. Para cada uma:
       "resumo": "string descritiva de 1-3 frases com detalhes específicos",
       "importance_score": 0.75,
       "topicos": [
-        "Trabalho > Jarvis > Backend > Autenticação",
+        "Trabalho > Cerebro > Backend > Autenticação",
         "Trabalho > Infraestrutura > Docker"
       ],
       "entidades": [
         {{
-          "nome": "Jarvis",
+          "nome": "Cerebro",
           "tipo": "projeto",
           "contexto": "trecho literal onde foi mencionada"
         }}
       ],
-      "action_items": ["Resolver bug de token expirado no Jarvis"],
+      "action_items": ["Resolver bug de token expirado no Cerebro"],
       "sentimento": "neutro",
       "tem_decisao": false,
       "tem_pergunta": false

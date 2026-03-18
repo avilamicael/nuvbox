@@ -126,7 +126,7 @@ Novas tabelas:
 usuario:
   nome: "Micael"
   contextos:
-    trabalho: "Jarvis, código, bug, deploy"
+    trabalho: "Cerebro, código, bug, deploy"
     pessoal: "saúde, exercício, família"
 ```
 
@@ -142,14 +142,14 @@ usuario:
 
 ```
 Você é um assistente especializado em extração de informações de transcrições
-do sistema Jarvis.
+do sistema Cerebro.
 
 # PERFIL DO USUÁRIO
 - Nome: Micael
 - Idioma: português
 
 # CONTEXTOS DO USUÁRIO
-- Trabalho: Jarvis, código, bugs, deploy...
+- Trabalho: Cerebro, código, bugs, deploy...
 - Pessoal: saúde, exercício, família...
 
 # TAREFA
@@ -172,7 +172,7 @@ Para cada transcrição, extrair:
       "idx": 0,
       "resumo": "string",
       "importance_score": 0.75,
-      "topicos": ["Trabalho > Jarvis > Bugs"],
+      "topicos": ["Trabalho > Cerebro > Bugs"],
       "entidades": [...]
     }
   ]
@@ -235,7 +235,7 @@ Motivação:
 
 Exemplo de saída v3 vs v2:
   v2: resumo: "Falou sobre um bug no sistema"
-  v3: resumo: "Identificou bug de autenticação no Jarvis: token expirado não é renovado
+  v3: resumo: "Identificou bug de autenticação no Cerebro: token expirado não é renovado
               automaticamente no endpoint /webhook/text. Planeja corrigir no BatchWorker."
 ```
 
@@ -276,7 +276,7 @@ Exemplo de saída v3 vs v2:
       "idx": 0,
       "resumo": "string descritiva de 1-3 frases com detalhes específicos",
       "importance_score": 0.75,
-      "topicos": ["Trabalho > Jarvis > Backend > Autenticação"],
+      "topicos": ["Trabalho > Cerebro > Backend > Autenticação"],
       "entidades": [
         {
           "nome": "string",
@@ -354,8 +354,8 @@ Importance score distribution:
 
 **Exemplo**:
 ```
-Tópico 1: "Trabalho > Jarvis > Bugs"
-Tópico 2: "trabalho > jarvis > bugs"  // ❌ Minúsculo
+Tópico 1: "Trabalho > Cerebro > Bugs"
+Tópico 2: "trabalho > Cerebro > bugs"  // ❌ Minúsculo
 ```
 
 **Workaround**: `prompt_builder` adota case inicial de preferência

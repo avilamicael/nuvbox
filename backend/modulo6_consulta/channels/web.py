@@ -22,7 +22,7 @@ def register_consulta_routes(app: Flask) -> None:
     Endpoint:
         POST /consulta
         Headers: X-Cerebro-Secret ou X-Jarvis-Secret
-        Body: {"pergunta": "o que eu falei sobre o Jarvis esta semana?"}
+        Body: {"pergunta": "o que eu falei sobre o Cerebro esta semana?"}
         Response: {"resposta": "...", "fragmentos": [...], "ferramentas_usadas": [...]}
     """
 
